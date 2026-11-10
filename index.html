@@ -1,0 +1,1341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Waleed Khalid, Lead Software Engineer</title>
+<meta name="description" content="Portfolio of Waleed Khalid, Lead Software Engineer at Arbisoft. A night sky you can explore, where every bright star is something he built.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --night: #05070d;
+  --panel: rgba(8, 11, 20, .8);
+  --line: rgba(238, 241, 248, .16);
+  --text: #eef1f8;
+  --soft: #c9d0e0;
+  --dim: #aab3c8;
+  --star: #f0ddb0;
+  --serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --night: #05070d; --text: #eef1f8; } }
+:root[data-theme="dark"], :root[data-theme="light"] { --night: #05070d; --text: #eef1f8; }
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; overflow: hidden; background: var(--night); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--star); outline-offset: 3px; }
+
+#sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#sky.dragging { cursor: grabbing; }
+#sky.pointing { cursor: pointer; }
+#labels { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+.lab { position: absolute; left: 0; top: 0; white-space: nowrap; opacity: 0; transition: opacity .35s; text-shadow: 0 1px 10px rgba(0, 0, 0, .9); will-change: transform; }
+.lab.on { opacity: 1; }
+.lab.con { font-family: var(--serif); font-style: italic; font-size: 21px; color: #d6e2fa; }
+.lab.st { font-size: 13px; font-weight: 500; color: var(--text); }
+.lab.st.found { color: var(--star); }
+#ring { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border: 1px solid var(--star); border-radius: 50%; opacity: 0; transition: opacity .3s; }
+#ring.on { opacity: 1; }
+
+.top { position: fixed; left: 0; right: 0; top: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 24px; padding: calc(env(safe-area-inset-top, 0px) + 14px) 5% 0; text-shadow: 0 1px 12px rgba(0, 0, 0, .7); pointer-events: none; }
+.top > * { pointer-events: auto; }
+.brand { font-family: var(--serif); font-size: 26px; text-decoration: none; display: flex; align-items: center; min-height: 44px; }
+.nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 22px; font-size: 15px; }
+.nav a, .nav button { display: flex; align-items: center; min-height: 44px; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; }
+.nav .pill { padding: 0 18px; border: 1px solid rgba(238, 241, 248, .5); border-radius: 22px; }
+.nav a:hover, .nav button:hover { color: #fff; }
+
+
+.hero { position: fixed; left: 5%; bottom: calc(env(safe-area-inset-bottom, 0px) + 132px); width: 520px; max-width: 90%; display: flex; flex-direction: column; gap: 14px; text-shadow: 0 1px 14px rgba(0, 0, 0, .75); transition: opacity .4s, transform .4s; pointer-events: none; }
+.hero > * { pointer-events: auto; }
+.hero h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(46px, 6vw, 84px); line-height: .98; letter-spacing: -.01em; }
+.hero p { margin: 0; max-width: 440px; color: #d5dbea; text-wrap: pretty; }
+.acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; text-shadow: none; }
+.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 26px; border: 0; border-radius: 24px; background: var(--star); color: #15120a; font-weight: 600; font-size: 15px; text-decoration: none; cursor: pointer; }
+.btn:hover { background: #f8ebc9; }
+.txt { display: inline-flex; align-items: center; min-height: 48px; font-size: 15px; text-shadow: 0 1px 12px rgba(0, 0, 0, .8); }
+body.reading .hero { opacity: 0; transform: translateY(12px); visibility: hidden; }
+
+#card { position: fixed; right: 4%; top: 46%; transform: translateY(-50%); width: 390px; max-width: 92%; max-height: 66%; overflow: auto; padding: 26px 26px 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+#card[hidden] { display: none; }
+#card .area { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--star); }
+#card h2 { margin: 4px 0 6px; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.08; padding-right: 36px; }
+#card .where { margin: 0 0 14px; font-size: 14px; color: var(--dim); }
+#card ul { margin: 0 0 14px; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: #dde2ee; }
+#card .tech { margin: 0 0 12px; font-size: 13px; color: var(--dim); }
+#card .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
+#card .row button { min-height: 44px; padding: 0 4px; background: none; border: 0; cursor: pointer; font-size: 14px; }
+#card .row button:hover { color: var(--star); }
+#close { position: absolute; right: 10px; top: 10px; width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; border-radius: 50%; cursor: pointer; }
+#close:hover { background: rgba(255, 255, 255, .08); }
+
+#hint { position: fixed; left: 5%; top: calc(env(safe-area-inset-top, 0px) + 68px); padding: 10px 18px; border: 1px solid var(--line); border-radius: 22px; background: rgba(8, 11, 20, .6); font-size: 14px; color: var(--soft); pointer-events: none; transition: opacity .6s; white-space: nowrap; }
+#hint.off { opacity: 0; }
+
+#rail { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 18px; padding: 26px 5% calc(env(safe-area-inset-bottom, 0px) + 12px); background: linear-gradient(to top, rgba(3, 5, 10, .96) 55%, rgba(3, 5, 10, 0)); }
+.stepper { flex: none; min-height: 44px; padding: 0 18px; border: 1px solid rgba(238, 241, 248, .45); border-radius: 22px; background: rgba(8, 11, 20, .6); cursor: pointer; font-size: 14px; }
+.stepper:hover:not(:disabled) { border-color: var(--star); color: var(--star); }
+.stepper:disabled { opacity: .35; cursor: default; }
+#track { flex: 1; min-width: 0; display: grid; gap: 14px; }
+.chap { min-width: 0; }
+.dots { display: flex; border-bottom: 1px solid rgba(238, 241, 248, .28); }
+.dot { flex: 1; min-width: 24px; height: 40px; padding: 0; display: grid; place-items: center; background: none; border: 0; cursor: pointer; }
+.dot i { width: 9px; height: 9px; border: 1px solid var(--soft); border-radius: 50%; transition: transform .2s, background .2s; }
+.dot.seen i { background: rgba(240, 221, 176, .55); border-color: var(--star); }
+.dot:hover i { transform: scale(1.5); border-color: #fff; }
+.dot.now i { background: #fff; border-color: #fff; transform: scale(1.7); box-shadow: 0 0 12px 3px rgba(240, 221, 176, .8); }
+.chname { display: block; width: 100%; min-height: 44px; padding: 6px 0 0; background: none; border: 0; text-align: left; cursor: pointer; font-size: 13px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chname b { display: block; font-weight: 500; color: var(--dim); font-size: 12px; }
+.chname:hover, .chap.here .chname { color: var(--star); }
+#pos { display: none; flex: 1; min-width: 0; text-align: center; font-size: 14px; color: var(--soft); }
+#scenes { position: fixed; right: 5%; top: calc(env(safe-area-inset-top, 0px) + 64px); display: flex; align-items: center; gap: 8px; max-width: 90%; }
+#scenelist { display: flex; gap: 6px; padding: 4px; border: 1px solid var(--line); border-radius: 26px; background: rgba(8, 11, 20, .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); overflow-x: auto; scrollbar-width: none; }
+#scenelist::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 14px; border: 0; border-radius: 18px; background: none; cursor: pointer; font-size: 13px; color: var(--soft); white-space: nowrap; }
+.chip:hover { color: #fff; }
+.chip[aria-pressed="true"] { background: var(--star); color: #15120a; font-weight: 600; }
+#daynight { min-height: 44px; border: 1px solid var(--line); border-radius: 22px; background: rgba(8, 11, 20, .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: var(--text); }
+#daynight[aria-pressed="true"] { background: #f6d27a; color: #15120a; font-weight: 600; }
+#busy { position: fixed; right: 5%; top: calc(env(safe-area-inset-top, 0px) + 116px); padding: 6px 14px; border-radius: 16px; background: rgba(8, 11, 20, .7); font-size: 13px; color: var(--soft); }
+#busy[hidden] { display: none; }
+#car { position: fixed; left: 0; top: 0; display: none; pointer-events: none; will-change: transform; }
+#car svg { display: block; width: 100%; height: auto; }
+#car .body { fill: #161a24; } #car .roof { fill: #0f1219; } #car .glass { fill: #070a11; } #car .bar { fill: #7c1009; }
+#car .lamp { fill: #ff2c1f; filter: drop-shadow(0 0 5px rgba(255, 50, 30, .95)); }
+body.day #car .body { fill: #b83430; } body.day #car .roof { fill: #972a27; } body.day #car .glass { fill: #1b2a3a; } body.day #car .bar { fill: #7a1410; }
+body.day #car .lamp { fill: #d9261c; filter: none; }
+body.day .lab { text-shadow: 0 1px 6px rgba(0, 24, 70, .9), 0 0 2px rgba(0, 24, 70, .7); }
+body.day .lab.con { color: #fff; }
+body.day .top, body.day .hero { text-shadow: 0 1px 10px rgba(0, 20, 60, .85); }
+.hero::before { content: ''; position: absolute; left: -90px; right: -70px; top: -40px; bottom: -34px; z-index: -1; background: radial-gradient(closest-side, rgba(5, 16, 44, .62), rgba(5, 16, 44, 0)); opacity: 0; transition: opacity .6s; pointer-events: none; }
+body.day .hero::before { opacity: 1; }
+#plain { position: fixed; inset: 0; overflow: auto; background: #070a12; padding: calc(env(safe-area-inset-top, 0px) + 28px) 6% 80px; }
+#plain[hidden] { display: none; }
+.sheet { max-width: 760px; margin: 0 auto; }
+.sheet .back { position: sticky; top: 0; display: flex; justify-content: flex-end; padding: 6px 0; }
+.sheet h1 { margin: 12px 0 4px; font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 7vw, 72px); line-height: 1; }
+.sheet .lede { margin: 0 0 6px; font-size: 19px; color: var(--soft); }
+.sheet .links { display: flex; flex-wrap: wrap; gap: 4px 22px; margin: 0 0 30px; font-size: 15px; }
+.sheet .links a { display: inline-flex; align-items: center; min-height: 44px; }
+.sheet h2 { margin: 38px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-family: var(--serif); font-weight: 400; font-size: 30px; }
+.sheet h3 { margin: 22px 0 2px; font-size: 18px; font-weight: 600; }
+.sheet h4 { margin: 18px 0 2px; font-size: 16px; font-weight: 600; color: var(--star); }
+.sheet .meta { margin: 0 0 6px; font-size: 14px; color: var(--dim); }
+.sheet p { margin: 0 0 10px; color: #dde2ee; max-width: 68ch; }
+.sheet ul { margin: 0 0 8px; padding-left: 20px; color: #dde2ee; max-width: 68ch; }
+.sheet li { margin-bottom: 6px; }
+.sheet dl { display: grid; grid-template-columns: minmax(120px, 190px) minmax(0, 1fr); gap: 8px 20px; margin: 0; }
+.sheet dt { color: var(--dim); }
+.sheet dd { margin: 0; color: #dde2ee; }
+body.nogl .skyonly { display: none; }
+
+@media (max-width: 760px) {
+  .brand { font-size: 22px; }
+  .nav { gap: 2px 16px; font-size: 14px; }
+  .hero { bottom: calc(env(safe-area-inset-bottom, 0px) + 86px); gap: 10px; }
+  .hero p { font-size: 15px; }
+  #card { left: 0; right: 0; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); transform: none; width: auto; max-width: none; max-height: 50%; border-radius: 14px 14px 0 0; border-width: 1px 0 0; }
+  #card h2 { font-size: 28px; }
+  #track { display: none; }
+  #pos { display: block; }
+  #rail { gap: 10px; padding-top: 18px; }
+  #hint { white-space: normal; left: 7%; right: 7%; text-align: center; top: calc(env(safe-area-inset-top, 0px) + 164px); }
+  #scenes { left: 5%; right: 5%; top: calc(env(safe-area-inset-top, 0px) + 104px); max-width: none; }
+  #scenelist { flex: 1; min-width: 0; }
+  .sheet dl { grid-template-columns: 1fr; gap: 2px; }
+  .sheet dd { margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .lab, .hero, #hint, #ring { transition: none; } }
+@media print { body { overflow: visible; background: #fff; color: #000; } #sky, #labels, .top, .hero, #card, #rail, #hint, #scenes, #car, .sheet .back { display: none !important; } #plain { position: static; display: block !important; background: #fff; padding: 0; } .sheet p, .sheet ul, .sheet dd, .sheet .lede { color: #000; } .sheet .meta, .sheet dt { color: #444; } }
+</style>
+</head>
+<body>
+
+<canvas id="sky" class="skyonly" tabindex="0" aria-label="A night sky that shows my career from left to right. Bright stars joined by lines are projects. Use the Earlier and Later buttons, or the left and right arrow keys, to move through them in order."></canvas>
+<div id="labels" class="skyonly" aria-hidden="true"><div id="ring"></div></div>
+
+<div id="car" class="skyonly" aria-hidden="true">
+  <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="100" cy="111" rx="90" ry="8" fill="rgba(0,0,0,.5)"/>
+    <rect x="20" y="82" width="30" height="30" rx="7" fill="#08090b"/><rect x="150" y="82" width="30" height="30" rx="7" fill="#08090b"/>
+    <path class="roof" d="M44 58Q50 20 74 15H126Q150 20 156 58Z"/>
+    <path class="glass" d="M57 54Q62 28 78 24H122Q138 28 143 54Z"/>
+    <path class="body" d="M13 94Q10 62 30 54H170Q190 62 187 94Q187 104 176 104H24Q13 104 13 94Z"/>
+    <path d="M24 92H176" stroke="rgba(0,0,0,.4)" stroke-width="2" fill="none"/>
+    <rect class="bar" x="62" y="67" width="76" height="4" rx="2"/>
+    <rect class="lamp" x="19" y="63" width="46" height="11" rx="5.5"/><rect class="lamp" x="135" y="63" width="46" height="11" rx="5.5"/>
+    <rect x="82" y="79" width="36" height="11" rx="2" fill="#e8e5d8"/>
+    <circle cx="58" cy="99" r="3.5" fill="#050506"/><circle cx="142" cy="99" r="3.5" fill="#050506"/>
+  </svg>
+</div>
+
+<header class="top">
+  <a class="brand" href="#sky">Waleed Khalid</a>
+  <nav class="nav" aria-label="Main">
+    <button id="home" class="skyonly" type="button">Whole sky</button>
+    <a href="#plain" class="pill">Plain view</a>
+    <a href="mailto:wkhaliddev@gmail.com">Contact</a>
+  </nav>
+</header>
+
+<section class="hero skyonly" aria-label="Introduction">
+  <h1>Waleed Khalid</h1>
+  <p>Lead software engineer at Arbisoft. This sky is my career, read left to right from 2021 to today. Every bright star is a project.</p>
+  <div class="acts">
+    <button class="btn" id="tour" type="button">Start at the beginning</button>
+    <a class="txt" href="#plain">Read the plain CV</a>
+  </div>
+</section>
+
+<aside id="card" class="skyonly" hidden aria-live="polite" aria-label="Selected star">
+  <button id="close" type="button" aria-label="Close">
+    <svg aria-hidden="true" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg>
+  </button>
+  <div class="area" id="c-area"></div>
+  <h2 id="c-title"></h2>
+  <p class="where" id="c-where"></p>
+  <ul id="c-facts"></ul>
+  <p class="tech" id="c-tech"></p>
+  <p class="tech" id="c-pos"></p>
+  <div class="row">
+    <button id="prev" type="button">Earlier</button>
+    <button id="next" type="button">Later</button>
+  </div>
+</aside>
+
+<div id="scenes" class="skyonly" role="group" aria-label="Scene and time of day">
+  <div id="scenelist"></div>
+  <button id="daynight" class="chip" type="button" aria-pressed="false" aria-label="Day or night"><svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="3.4" fill="currentColor"/><path d="M8 .8v2M8 13.2v2M.8 8h2M13.2 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M2.9 13.1l1.4-1.4M11.7 4.3l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span>Night</span></button>
+</div>
+<div id="busy" class="skyonly" role="status" hidden>Painting the scene…</div>
+<div id="hint" class="skyonly" aria-hidden="true">Scroll or press the arrow keys to travel through time. Drag to look around.</div>
+
+<nav id="rail" class="skyonly" aria-label="Timeline">
+  <button id="rprev" class="stepper" type="button">Earlier</button>
+  <div id="track"></div>
+  <div id="pos" aria-live="polite"></div>
+  <button id="rnext" class="stepper" type="button">Later</button>
+</nav>
+
+<main id="plain" hidden>
+  <div class="sheet">
+    <div class="back skyonly"><a class="btn" href="#sky">Back to the sky</a></div>
+    <h1>Waleed Khalid</h1>
+    <p class="lede">Lead Software Engineer. Lahore, Pakistan (UTC+5), open to remote roles.</p>
+    <div class="links">
+      <a href="mailto:wkhaliddev@gmail.com">wkhaliddev@gmail.com</a>
+      <a href="https://www.linkedin.com/in/wkhaliddev" rel="noopener">linkedin.com/in/wkhaliddev</a>
+      <a href="https://github.com/wkhaliddev1" rel="noopener">github.com/wkhaliddev1</a>
+    </div>
+
+    <h2>Headline Facts</h2>
+    <ul>
+      <li>5+ years professional software engineering (Jul 2021 – present, all at Arbisoft)</li>
+      <li>4 years on Moodle-based LMS engineering (Schoolgram, Nov 2022 – present)</li>
+      <li>Lead Software Engineer on Schoolgram since Apr 2026; leads 16 people (10 web developers, 2 mobile, 4 QA)</li>
+      <li>Schoolgram: ~10 schools, 25K+ users (~10K students and staff, 15–20K parents) + Homeschoolers (1K+ signups)</li>
+      <li>Payment module: ~$100K processed in 3 months for one US school (~50% of that school’s fee collection)</li>
+      <li>Agentic development rollout: 75% faster PR reviews, ~3x delivery throughput</li>
+      <li>Shipped features on Jobcase, a platform with 120M+ users</li>
+    </ul>
+
+    <div id="plain-work"></div>
+
+    <h2>Skills</h2>
+    <dl>
+      <dt>Frontend</dt><dd>React, Next.js, TypeScript, JavaScript, Angular, Ionic, React Native, Konva.js, Redux Toolkit, RTK Query, Redux Thunk, React Context, Formik, Tailwind CSS, Material UI, HTML, CSS, WCAG accessibility, i18n</dd>
+      <dt>Backend</dt><dd>PHP, Moodle (plugins, external web services, capabilities, scheduled tasks), Python, Django, REST APIs, webhooks</dd>
+      <dt>Data</dt><dd>MySQL, PostgreSQL, Redis, query optimization, indexing, schema design, transactions, idempotency</dd>
+      <dt>Cloud &amp; DevOps</dt><dd>AWS (S3, SES, Lambda, CloudFront), Docker, Nginx, Linux, GitHub Actions, CI/CD</dd>
+      <dt>Payments</dt><dd>Stripe (Checkout, subscriptions, webhooks), EasyPaisa, JazzCash</dd>
+      <dt>AI Engineering</dt><dd>Claude Code, custom coding agents, MCP, n8n, RAG, LangChain, vector retrieval, multi-agent orchestration</dd>
+      <dt>Testing</dt><dd>PHPUnit, Playwright, Jest, Vitest, React Testing Library</dd>
+      <dt>Other</dt><dd>NFC, MQL5/MetaTrader 5, FFmpeg, DRM video streaming, web scraping</dd>
+    </dl>
+
+    <h2>Education</h2>
+    <p>BS Computer Engineering (Major: Computer Science) — University of Engineering and Technology (UET), Lahore — 2021</p>
+
+    <h2>Courses</h2>
+    <ul>
+      <li>Ultimate AWS Certified Cloud Practitioner CLF-C02 — Stéphane Maarek (Udemy course; not certified)</li>
+      <li>Mastering the System Design Interview — Frank Kane (Udemy)</li>
+      <li>AI Builder with n8n: Create Agents &amp; Voice Agents — Udemy (in progress)</li>
+    </ul>
+
+    <h2>Languages</h2>
+    <p>English (Fluent), Urdu (Native)</p>
+  </div>
+</main>
+
+<noscript><style>#plain{display:block!important}.skyonly{display:none!important}</style></noscript>
+
+<script>
+(() => {
+'use strict';
+
+/* ------------------------------------------------------------------ data */
+const SG = 'Arbisoft, Schoolgram. ';
+const SKY = [
+  { name: 'First projects', years: 'Jul 2021 – Oct 2022', az: -66, alt: 30, label: [0, 12],
+    stars: [
+      { id: 'edx', g: 'edx', name: 'edX', area: 'Full stack', d: [-9, -3], mag: 0.6, where: 'Junior Software Engineer, Data Engineering and Analytics team. Jul 2021 – Nov 2021.',
+        facts: ['Probation project: built a React/Django test application.'],
+        tech: 'React, Django' },
+      { id: 'gs', g: 'gs', name: 'Video review at 500x', area: 'Video streaming', d: [0, 5], mag: 0.1, where: 'General Symbol. Software Engineer (Full Stack). Nov 2021 – Jan 2022.',
+        facts: ['Built a Django video version-control product with FFmpeg, DRM-encrypted streaming and variable-speed playback up to 500x for rapid content review.'],
+        tech: 'Django, FFmpeg, DRM video streaming' },
+      { id: 'jobcase', g: 'jobcase', name: 'Jobcase mobile app', area: 'Mobile', d: [9, -2], mag: -0.6, where: 'Jobcase. Software Engineer (React Native). Mar 2022 – Oct 2022.',
+        facts: ['Shipped inline follow/unfollow/like actions in the title overflow menu, turning a two-step flow (open page, then act) into one tap, on a job platform with 120M+ users.', 'Worked with Redux Thunk, React Context, Formik, Redux Persist/AsyncStorage, push notifications, native modules, nested navigation/deep-linking and FlatList virtualization.'],
+        tech: 'React Native, Redux Thunk, React Context, Formik' }
+    ],
+    lines: [[0, 1], [1, 2]] },
+  { name: 'Building Schoolgram', years: 'Nov 2022 – Jul 2024', az: -22, alt: 34, label: [0, 14],
+    stars: [
+      { id: 'core', g: 'se', name: 'Schoolgram from day one', area: 'Platform', d: [-15, 2], mag: -0.2, where: SG + 'Software Engineer. Nov 2022 – Jul 2024.',
+        facts: ['Joined the LMS at inception; built core platform features, custom PHP plugins, REST/external-service integrations and React interfaces.'],
+        tech: 'PHP, React' },
+      { id: 'assess', g: 'se', name: 'Assessment platform', area: 'Interfaces', d: [-10, -5], mag: -0.8, where: SG + 'Software Engineer. Nov 2022 – Jul 2024.',
+        facts: ['Built the assessment and assignment platform that replaced pen-and-paper testing: ~1K assessments/month for ~5K students, with automated grading and analytics dashboards.'],
+        tech: '' },
+      { id: 'queue', g: 'se', name: 'Submission queue', area: 'Reliability', d: [-5, 5], mag: 0.3, where: SG + 'Software Engineer. Nov 2022 – Jul 2024.',
+        facts: ['Built a sessionStorage-backed submission queue that eliminated lost submissions on page refresh and cut snapshot-creation time by up to 50% through asynchronous processing.'],
+        tech: 'sessionStorage, asynchronous processing' },
+      { id: 'games', g: 'se', name: 'Learning games on canvas', area: 'Interfaces', d: [0, -3], mag: -1.0, where: SG + 'Software Engineer. Nov 2022 – Jul 2024.',
+        facts: ['Built 10+ gamified, animated learning activities in React + Konva.js with reusable canvas-interaction components; used by every student on the platform.'],
+        tech: 'React, Konva.js' },
+      { id: 'services', g: 'se', name: 'Web services and permissions', area: 'Platform', d: [5, 6], mag: 0.3, where: SG + 'Software Engineer. Nov 2022 – Jul 2024.',
+        facts: ['Migrated legacy AJAX integrations to Moodle external web services with capability-based authorization, replacing hard-coded role checks in finance, admissions and grading.'],
+        tech: 'Moodle external web services' },
+      { id: 'sespoc', g: 'se', name: 'Email bounce handling, first design', area: 'Reliability', d: [10, -5], mag: 0.5, where: SG + 'Software Engineer. Nov 2022 – Jul 2024.',
+        facts: ['Designed an AWS SES bounce-handling proof of concept (shared Python intermediary service routing bounce/complaint actions to multiple Moodle instances), later productionized.'],
+        tech: 'AWS SES, Python' },
+      { id: 'lums', g: 'lums', name: 'Bootcamp mentor', area: 'Mentoring', d: [15, 2], mag: 0.5, where: 'Arbisoft × LUMS Bootcamp. Mentor. Jun 2024 – Sep 2024.',
+        facts: ['Mentored 11 trainees through a company and LUMS training bootcamp.'],
+        tech: '' }
+    ],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]] },
+  { name: 'Senior engineer', years: 'Jul 2024 – Apr 2026', az: 22, alt: 36, label: [0, 14],
+    stars: [
+      { id: 'nfc', g: 'senior', name: 'NFC staff attendance', area: 'Product ownership', d: [-15, 3], mag: -0.7, where: SG + 'Senior Software Engineer. Jul 2024 – Apr 2026.',
+        facts: ['Owned an NFC staff attendance system end to end (requirements, design, build, test, deploy) across web, Android and iOS (Angular/Ionic, React, Moodle); in use by 50–60 staff at the first school, cutting attendance effort by ~80% versus manual registers. Designed to extend to student attendance and more schools.'],
+        tech: 'Angular/Ionic, React, Moodle, NFC' },
+      { id: 'finance', g: 'senior', name: 'Finance system for schools', area: 'Payments', d: [-10, -5], mag: -0.9, where: SG + 'Senior Software Engineer. Jul 2024 – Apr 2026.',
+        facts: ['Built a multi-gateway Finance Management system (Stripe, EasyPaisa, JazzCash) from the ground up, including Stripe subscription billing (recurring charges, customer/subscription lifecycle, webhooks, payment-status sync).', 'Cut the finance module’s initial load time from 12s to 2s (~83%) through SQL query optimization, payload reduction and render-path fixes.'],
+        tech: 'Stripe, EasyPaisa, JazzCash, SQL' },
+      { id: 'sessions', g: 'sessions', name: 'Sessions Portal', area: 'Frontend', d: [-5, 5], mag: 0.0, where: 'Arbisoft, Sessions Portal. Frontend Engineer. Oct 2024 – Mar 2025.',
+        facts: ['Owned the frontend (Next.js) of a company-wide portal hosting Arbisoft’s recorded session videos; live and used by 800+ employees.'],
+        tech: 'Next.js' },
+      { id: 'email', g: 'senior', name: 'Transactional email on AWS SES', area: 'Reliability', d: [0, -3], mag: 0.1, where: SG + 'Senior Software Engineer. Jul 2024 – Apr 2026.',
+        facts: ['Rebuilt transactional email on AWS SES after a bounce-driven region suspension, adding automated bounce/complaint handling; now sends 10K+ emails/month with zero suspensions since.'],
+        tech: 'AWS SES' },
+      { id: 'admissions', g: 'senior', name: 'Admissions forms', area: 'Interfaces', d: [5, 6], mag: 0.0, where: SG + 'Senior Software Engineer. Jul 2024 – Apr 2026.',
+        facts: ['Replaced Google Forms admissions with a configurable dynamic forms plugin, cutting enrollment processing effort by 50%.'],
+        tech: '' },
+      { id: 'rollover', g: 'senior', name: 'Academic Year Rollover', area: 'Platform', d: [10, -5], mag: 0.2, where: SG + 'Senior Software Engineer. Jul 2024 – Apr 2026.',
+        facts: ['Delivered Academic Year Rollover, reducing each school’s year-end data migration from 1–2 weeks of manual work to 2–3 hours.'],
+        tech: '' },
+      { id: 'cicd', g: 'senior', name: 'CI/CD pipelines', area: 'Delivery', d: [15, 2], mag: 0.6, where: SG + 'Senior Software Engineer. Jul 2024 – Apr 2026.',
+        facts: ['Improved CI/CD pipelines for the Moodle (PHP) and Django codebases.'],
+        tech: '' }
+    ],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]] },
+  { name: 'Leading', years: 'Apr 2026 – Present', az: 68, alt: 32, label: [0, 14],
+    stars: [
+      { id: 'lead', g: 'lead', name: 'Leading the Schoolgram team', area: 'Leadership', d: [-18, 2], mag: -1.3, where: SG + 'Lead Software Engineer. Apr 2026 – Present.',
+        facts: ['Lead 16 people across web development (10), mobile (2) and QA (4); own architecture, requirement gathering, sprint planning, code review standards, releases and client demos.'],
+        tech: 'PHP/Moodle, React, Angular/Ionic, MySQL, AWS, Django' },
+      { id: 'agents', g: 'lead', name: 'Agentic development rollout', area: 'AI engineering', d: [-14, -5], mag: -0.7, where: SG + 'Lead Software Engineer. Apr 2026 – Present.',
+        facts: ['Championed early adoption of agentic development (Claude Code, custom coding agents, skills/plugins/hooks, MCP), cutting PR review time by 75% and roughly tripling delivery throughput.'],
+        tech: 'Claude Code, custom coding agents, MCP' },
+      { id: 'mentor', g: 'lead', name: 'Mentoring and hiring', area: 'Leadership', d: [-10, 5], mag: 0.3, where: SG + 'Lead Software Engineer. Apr 2026 – Present.',
+        facts: ['Mentored 4 engineers and interviewed ~20 engineering candidates.'],
+        tech: '' },
+      { id: 'paymod', g: 'lead', name: 'Reusable payment module', area: 'Payments', d: [-6, -3], mag: -0.9, where: SG + 'Lead Software Engineer. Apr 2026 – Present.',
+        facts: ['Designed and shipped a reusable PHP payment module (Stripe, EasyPaisa, JazzCash) covering one-time checkout, recurring subscriptions, webhook lifecycle updates and scheduled reconciliation; processed ~$100K in its first 3 months for a US school, covering ~50% of that school’s fee collection. Other schools are in adoption.', 'Replaced spreadsheet-based payment reconciliation, cutting manual finance effort by more than half with zero reconciliation errors.'],
+        tech: 'PHP, Stripe, EasyPaisa, JazzCash' },
+      { id: 'paysafe', g: 'lead', name: 'Payment safety', area: 'Payments', d: [-2, 6], mag: 0.2, where: SG + 'Lead Software Engineer. Apr 2026 – Present.',
+        facts: ['Kept card data off the platform with gateway-hosted tokenized checkout; secured endpoints with RBAC and HMAC-validated webhooks.', 'Prevented duplicate charges under concurrent requests by enforcing idempotency at the application and transport layers.'],
+        tech: 'Tokenized checkout, RBAC, HMAC, idempotency' },
+      { id: 'home', g: 'lead', name: 'Homeschoolers launch', area: 'Product', d: [2, -5], mag: -0.2, where: SG + 'Lead Software Engineer. Apr 2026 – Present.',
+        facts: ['Led the launch of Homeschoolers, a direct-to-family offering not tied to any school; 1K+ signups since launch.'],
+        tech: '' },
+      { id: 'upgrade', g: 'lead', name: 'Moodle upgrade, in progress', area: 'Platform', d: [6, 3], mag: 0.0, where: SG + 'Lead Software Engineer. Apr 2026 – Present.',
+        facts: ['Leading a staged Moodle upgrade (4.2 → 4.5 → 5.2) across all schools, refactoring 15 local plugins with ~2 hours of planned downtime.'],
+        tech: 'Moodle' },
+      { id: 'gathergrid', g: 'gathergrid', name: 'GatherGrid', area: 'AI consulting', d: [10, -4], mag: 0.0, where: 'AI Architecture Consultant, side advisory. Jun 2026 – Sep 2026.',
+        facts: ['Advised on architecture, scalability and resilience for an event-discovery/booking product connecting Outlook events, a mobile app and PostgreSQL vector retrieval, including RSVP/capacity checks and keeping retrieval data in sync as events changed.'],
+        tech: 'PostgreSQL vector retrieval' },
+      { id: 'almanac', g: 'almanac', name: 'Almanac', area: 'AI consulting', d: [14, 4], mag: 0.0, where: 'AI Architecture Consultant, side advisory. Jun 2026 – Sep 2026.',
+        facts: ['Advised on LangChain/RAG, multi-agent orchestration and context management for a document-intelligence product, including weighted retrieval ranking (professor, year, relevance, question frequency) for study-plan and sample-exam generation.'],
+        tech: 'LangChain, RAG, multi-agent orchestration' },
+      { id: 'rbtrade', g: 'rbtrade', name: 'RB Trade', area: 'Independent project', d: [18, -3], mag: 0.1, where: 'Automated trading systems, MQL5 / MetaTrader 5. Jul 2026 – Present.',
+        facts: ['Build Expert Advisors for indicator-driven strategies (moving-average crossover, RSI) with server-side stop-loss/take-profit via CTrade, risk-based position sizing, closed-bar anti-repainting logic and magic-number filtering; validated through Strategy Tester backtesting.'],
+        tech: 'MQL5, MetaTrader 5' }
+    ],
+    lines: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9]] }
+];
+
+// the plain CV, newest first; each entry pulls its bullets from the stars above
+const PLAIN = [
+  { sec: 'Work Experience', note: 'Arbisoft, Lahore (Jul 2021 – Present)' },
+  { t: 'Schoolgram — Multi-tenant Moodle-based school management LMS', m: 'Nov 2022 – Present. Stack: PHP/Moodle, React, Angular/Ionic, MySQL, AWS, Django analytics service.' },
+  { t: 'Lead Software Engineer', m: 'Apr 2026 – Present', g: 'lead', sub: true },
+  { t: 'Senior Software Engineer', m: 'Jul 2024 – Apr 2026', g: 'senior', sub: true },
+  { t: 'Software Engineer', m: 'Nov 2022 – Jul 2024', g: 'se', sub: true },
+  { t: 'Sessions Portal — Frontend Engineer', m: 'Oct 2024 – Mar 2025', g: 'sessions' },
+  { t: 'Arbisoft × LUMS Bootcamp — Mentor', m: 'Jun 2024 – Sep 2024', g: 'lums' },
+  { t: 'Jobcase — Software Engineer (React Native)', m: 'Mar 2022 – Oct 2022', g: 'jobcase' },
+  { t: 'General Symbol — Software Engineer (Full Stack)', m: 'Nov 2021 – Jan 2022', g: 'gs' },
+  { t: 'edX — Junior Software Engineer (Data Engineering & Analytics team)', m: 'Jul 2021 – Nov 2021', g: 'edx' },
+  { sec: 'AI Product Consulting (side advisory)', note: 'Jun 2026 – Sep 2026' },
+  { t: 'GatherGrid — AI Event Discovery & Booking (AI Architecture Consultant)', m: '', g: 'gathergrid' },
+  { t: 'Almanac — AI Knowledge Retrieval & Study Planning (AI Architecture Consultant)', m: '', g: 'almanac' },
+  { sec: 'Independent Project' },
+  { t: 'RB Trade — Automated Trading Systems (MQL5 / MetaTrader 5)', m: 'Jul 2026 – Present', g: 'rbtrade' }
+];
+
+/* -------------------------------------------------------------- helpers */
+const D2R = Math.PI / 180, TAU = Math.PI * 2;
+const $ = (id) => document.getElementById(id);
+const dirOf = (az, alt) => [Math.cos(alt) * Math.sin(az), Math.sin(alt), -Math.cos(alt) * Math.cos(az)];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const wrap = (a) => { a = (a + Math.PI) % TAU; if (a < 0) a += TAU; return a - Math.PI; };
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// flat list of project stars
+const STARS = [];
+SKY.forEach((c, ci) => {
+  c.dir = dirOf(c.az * D2R, c.alt * D2R);
+  c.first = STARS.length;
+  c.stars.forEach((s) => {
+    s.az = (c.az + s.d[0]) * D2R; s.alt = (c.alt + s.d[1]) * D2R;
+    s.p = dirOf(s.az, s.alt); s.con = c; s.ci = ci; s.index = STARS.length;
+    STARS.push(s);
+  });
+});
+
+/* ---------------------------------------------------- plain view content */
+const work = $('plain-work');
+PLAIN.forEach((e) => {
+  if (e.sec) { work.appendChild(el('h2', '', e.sec)); if (e.note) work.appendChild(el('p', 'meta', e.note)); return; }
+  work.appendChild(el(e.sub ? 'h4' : 'h3', '', e.t));
+  if (e.m) work.appendChild(el('p', 'meta', e.m));
+  if (!e.g) return;
+  const ul = el('ul');
+  STARS.filter((s) => s.g === e.g).forEach((s) => s.facts.forEach((f) => ul.appendChild(el('li', '', f))));
+  work.appendChild(ul);
+});
+
+/* ------------------------------------------------------------- found set */
+const found = new Set();
+try { JSON.parse(localStorage.getItem('wk-sky-found') || '[]').forEach((id) => found.add(id)); } catch (e) { /* storage unavailable */ }
+const saveFound = () => { try { localStorage.setItem('wk-sky-found', JSON.stringify([...found])); } catch (e) { /* ignore */ } };
+let syncRail = () => {};
+
+/* ----------------------------------------------------------------- views */
+const plain = $('plain');
+let glOk = false;
+function route() {
+  const wantPlain = location.hash === '#plain' || !glOk;
+  plain.hidden = !wantPlain;
+  if (wantPlain) plain.scrollTop = 0;
+  requestDraw();
+}
+window.addEventListener('hashchange', route);
+
+/* ---------------------------------------------------------------- WebGL */
+const canvas = $('sky');
+let gl = null;
+try { gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' }) || canvas.getContext('experimental-webgl'); } catch (e) { gl = null; }
+
+const VS_QUAD = 'attribute vec2 aP; varying vec2 vN; void main(){ vN=aP; gl_Position=vec4(aP,0.,1.); }';
+const FS_SKY = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 vN;
+uniform vec3 uR, uU, uF, uNg, uGc, uSun, uMoon;
+uniform float uTan, uAspect, uPass, uTime, uPx, uDay, uScene, uBake, uMotion;
+uniform sampler2D uTex, uTexD, uLandN, uLandD;
+float sq(float x){ return x*x; }
+float hash(vec3 p){ p=fract(p*0.3183099+vec3(.1,.2,.3)); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float noise(vec3 x){
+  vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f);
+  return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x), mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x), f.y),
+             mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x), mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x), f.y), f.z);
+}
+float h21(vec2 p, float sd){ vec3 p3=fract(vec3(p.xyx)*vec3(.1031,.1030,.0973)+sd*.137); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+vec3 dust(vec2 g, float sd, float cellPx, float prob){
+  vec2 c=floor(g), q=fract(g);
+  float h=h21(c,sd);
+  if(h>prob) return vec3(0.);
+  vec2 o=0.5+0.4*(vec2(h21(c,sd+3.),h21(c,sd+5.))-0.5);
+  float b=h21(c,sd+7.);
+  float r=min(0.45+0.55*b*b, cellPx*0.3-0.45);
+  float v=1.-smoothstep(r-0.5, r+0.5, length(q-o)*cellPx);
+  return v*(0.34+0.66*b*b)*mix(vec3(.74,.84,1.), vec3(1.,.88,.70), h21(c,sd+11.));
+}
+float fbm(vec3 p){ float a=.5, s=0.; for(int i=0;i<5;i++){ s+=a*noise(p); p=p*2.03+vec3(1.7,9.2,3.1); a*=.5; } return s; }
+float fbm3(vec3 p){ float a=.5, s=0.; for(int i=0;i<3;i++){ s+=a*noise(p); p=p*2.03+vec3(1.7,9.2,3.1); a*=.5; } return s; }
+float wrapA(float a){ return atan(sin(a),cos(a)); }
+vec3 skyAt(float az, float alt){
+  vec2 uv=vec2(az/6.2831853+0.5, clamp((alt+0.15)/1.7207963,0.,1.));
+  return mix(texture2D(uTex,uv).rgb, texture2D(uTexD,uv).rgb, uDay);
+}
+vec4 landAt(float az, float alt){
+  vec2 uv=vec2(az/6.2831853+0.5, clamp((alt+0.45)/0.975,0.002,0.998));
+  vec4 l=mix(texture2D(uLandN,uv), texture2D(uLandD,uv), uDay);
+  l.a*=step(alt,0.524);
+  return l;
+}
+
+vec4 bakeNight(vec3 d, float az, float alt){
+  float h=clamp(alt/1.25,0.,1.);
+  float t=pow(1.-h,3.2);
+  vec3 col=mix(vec3(0.0010,0.0018,0.0052), vec3(0.0065,0.0105,0.0190), t);
+  col+=exp(-sq((alt-0.12)/0.11))*(0.5+0.8*noise(d*3.))*vec3(0.0022,0.0060,0.0040);
+  float da=wrapA(az-0.62);
+  col+=exp(-sq(da/0.42)-sq(alt/0.13))*vec3(0.050,0.024,0.008);
+  float lat=asin(clamp(dot(d,uNg),-1.,1.));
+  float mwA=0.;
+  if(abs(lat)<0.62){
+    float along=dot(d,uGc);
+    float l=lat+(fbm3(d*2.5)-0.5)*0.10;
+    float w=0.075+0.055*max(along,0.);
+    float band=exp(-sq(l/(w*2.1)))*0.35+exp(-sq(l/w));
+    float fall=clamp(0.5+0.7*along,0.14,1.2);
+    float clouds=sq(clamp((fbm(d*6.+3.)-0.26)*2.1,0.,1.));
+    float fine=fbm3(d*26.);
+    float mw=band*fall*(0.05+2.5*clouds)*(0.55+0.9*fine);
+    float rn=fbm(d*7.+11.);
+    float rift=exp(-sq(sq((l-0.012)/(0.016+0.03*rn))))*clamp(rn*3.-0.9,0.,1.);
+    float r2=clamp(fbm3(d*14.+5.)*3.4-1.6,0.,1.)*exp(-sq(l/(w*1.4)));
+    mw*=(1.-0.93*rift)*(1.-0.85*r2);
+    float warm=exp(-sq(l/(w*0.8)))*clamp(along+0.1,0.,1.);
+    col+=mw*0.040*mix(vec3(.62,.74,1.), vec3(1.,.80,.56), warm)*smoothstep(-0.02,0.34,alt);
+    mwA=1.-exp(-mw*1.1);
+  }
+  col=1.-exp(-col*4.2);
+  col=pow(col,vec3(1./2.2));
+  return vec4(col,mwA);
+}
+vec4 bakeDay(vec3 d, float az, float alt){
+  float y=max(d.y,0.);
+  float mu=dot(d,uSun);
+  vec3 col=mix(vec3(0.60,0.75,0.90), vec3(0.055,0.195,0.515), pow(y,0.42));
+  col=mix(col, vec3(0.80,0.86,0.93), exp(-y*9.)*0.50);
+  col*=0.93+0.09*mu;
+  col+=vec3(1.,0.86,0.66)*(pow(max(mu,0.),6.)*0.15+pow(max(mu,0.),60.)*0.28+pow(max(mu,0.),700.)*0.55);
+  if(d.y>0.012){
+    vec2 p=d.xz/(d.y+0.06)*0.55;
+    float thr=mix(0.47,0.66,smoothstep(0.08,0.55,alt));
+    float dn=fbm(vec3(p,1.3));
+    float cov=smoothstep(thr,thr+0.15,dn);
+    if(cov>0.){
+      float dl=fbm(vec3(p+normalize(uSun.xz)*0.13,1.3));
+      float lit=clamp(0.52+2.4*(dn-dl),0.,1.);
+      vec3 cc=mix(vec3(0.47,0.54,0.68), vec3(1.0,0.985,0.955), lit);
+      cc=mix(cc, vec3(0.86,0.90,0.96), exp(-y*7.)*0.72);
+      col=mix(col, cc, cov*(0.93-0.38*exp(-y*10.)));
+    }
+  }
+  return vec4(clamp(col,0.,1.),0.);
+}
+
+float waveH(vec2 P, float t, float fp){
+  float h=0., a=0.55, f=0.045;
+  for(int i=0;i<5;i++){
+    float fade=clamp(1.-fp*f*2.2,0.,1.);
+    h+=a*fade*noise(vec3(P*f+vec2(t*0.33,t*0.19)*(1.+float(i)*0.35), float(i)*3.7+t*0.07));
+    P=mat2(0.8,-0.6,0.6,0.8)*P; a*=0.5; f*=2.1;
+  }
+  return h;
+}
+vec4 sceneSea(vec3 d, float az, float alt, float e){
+  float mw=smoothstep(e,-e,alt);
+  if(mw<=0.) return vec4(0.);
+  float tt=7./max(-d.y,0.0005);
+  vec2 P=vec2(d.x,-d.z)*tt;
+  float t=uTime*uMotion, fp=tt*uPx*1.5, ee=max(0.10,fp*0.5);
+  float h0=waveH(P,t,fp);
+  vec3 n=normalize(vec3(-(waveH(P+vec2(ee,0.),t,fp)-h0)/ee, 1., -(waveH(P+vec2(0.,ee),t,fp)-h0)/ee));
+  vec3 r=reflect(d,n); r.y=abs(r.y)+0.003; r=normalize(r);
+  float F=0.02+0.98*pow(1.-clamp(dot(-d,n),0.,1.),5.);
+  vec3 c=mix(mix(vec3(0.002,0.004,0.009), vec3(0.008,0.075,0.12), uDay), skyAt(atan(r.x,-r.z), asin(clamp(r.y,0.,1.))), F);
+  vec3 L=mix(uMoon,uSun,step(0.5,uDay));
+  float sd=max(dot(r,L),0.);
+  c+=mix(vec3(0.60,0.66,0.82)*(pow(sd,900.)*2.6+pow(sd,60.)*0.05), vec3(1.,0.93,0.80)*(pow(sd,700.)*3.+pow(sd,40.)*0.10), uDay);
+  c=mix(c, skyAt(az,0.010), 1.-exp(-tt/5200.));
+  return vec4(c,mw);
+}
+vec4 sceneEmbers(float az, float alt){
+  if(alt>0.72 || alt<0.02) return vec4(0.);
+  float t=uTime*uMotion, dz=wrapA(az-0.38);
+  float prob=0.085*exp(-sq(dz/0.28))*smoothstep(0.70,0.26,alt)*smoothstep(0.12,0.26,alt);
+  float emb=dust(vec2(dz*64., alt*64.-t*1.6+3.*sin(dz*9.)), 91., 1./(64.*uPx), prob).r;
+  emb*=(0.6+0.4*sin(t*5.+dz*90.+alt*70.))*mix(1.,0.45,uDay);
+  return vec4(1.,0.72,0.32, clamp(emb*1.7,0.,1.));
+}
+vec4 sceneDrive(vec3 d, float az, float alt, float e){
+  float mg=smoothstep(e,-e,alt);
+  if(mg<=0.) return vec4(0.);
+  vec3 base=landAt(az,alt).rgb;
+  float hgt=2.4, dy=max(-d.y,0.0006);
+  float tt=hgt/dy, X=tt*d.x-1.7, Z=tt*(-d.z);
+  float sp=uTime*uMotion*24.;
+  float Zs=Z+sp;
+  float ax=tt*uPx*1.2, azp=tt*uPx/dy*1.2;
+  float tn=fbm3(vec3(X*0.22, Zs*0.22, 1.)), tf=noise(vec3(X*2.3, Zs*2.3, 3.));
+  vec3 land=base*(0.70+0.62*tn)*(0.90+0.22*tf*clamp(1.-ax*2.,0.,1.));
+  float road=1.-smoothstep(3.7-ax,3.7+ax,abs(X));
+  float sh=1.-smoothstep(4.6-ax,4.6+ax,abs(X));
+  land=mix(land, base*mix(vec3(0.9), vec3(0.62,0.58,0.54), uDay)*(0.8+0.4*tf), sh*0.75);
+  float wear=exp(-sq((abs(abs(X)-1.75)-0.0)/0.55));
+  vec3 rc=mix(vec3(0.017,0.018,0.022), vec3(0.150,0.152,0.160), uDay)*(0.84+0.30*noise(vec3(X*5.,Zs*5.,0.))*clamp(1.-ax*3.,0.,1.))*(1.-0.16*wear);
+  rc+=mix(vec3(0.), vec3(0.10,0.10,0.105), uDay)*pow(clamp(1.-dy*3.,0.,1.),3.);
+  vec3 paint=mix(vec3(0.085,0.088,0.090), vec3(0.90,0.89,0.83), uDay)*(0.86+0.2*tf);
+  float cov=clamp(0.20/max(2.*ax,0.20),0.,1.);
+  float edge=(1.-smoothstep(0.09-ax*0.5,0.09+ax,abs(abs(X)-3.35)))*cov;
+  float f=fract(Zs/9.), aa=azp/9.;
+  float dash=(1.-smoothstep(0.45-aa,0.45+aa,f))*smoothstep(0.,aa,f);
+  dash=mix(dash,0.45,clamp(aa*2.5-0.4,0.,1.));
+  float centre=(1.-smoothstep(0.075-ax*0.5,0.075+ax,abs(X)))*dash*clamp(0.17/max(2.*ax,0.17),0.,1.);
+  rc=mix(rc, paint, max(edge,centre));
+  vec3 gc=mix(land, rc, road);
+  float hl=(1.-uDay)*exp(-sq((X+1.7)/2.7))*smoothstep(11.5,17.,Z)*exp(-max(Z-15.,0.)/34.);
+  gc+=gc*hl*10.+vec3(0.9,0.82,0.62)*hl*0.010;
+  if(abs(d.x)>0.002){
+    float Xp=d.x>0. ? 4.9 : -4.9;
+    float tp=(Xp+1.7)/d.x;
+    if(tp>0.){
+      float Yp=hgt+tp*d.y, Zp=tp*(-d.z)+sp;
+      float fz=abs(fract(Zp/16.)-0.5)*16.;
+      float pa=tp*uPx/max(abs(d.x),0.06);
+      float pm=(1.-smoothstep(0.07-pa*0.5,0.07+pa,fz))*clamp(0.14/max(pa*1.5,0.14),0.,1.)*step(0.,Yp)*(1.-smoothstep(1.0-tp*uPx,1.0+tp*uPx,Yp));
+      vec3 pc=mix(vec3(0.05,0.05,0.06), vec3(0.86,0.86,0.82), uDay);
+      float rf=step(0.76,Yp)*step(Yp,0.94);
+      pc=mix(pc, vec3(1.,0.22,0.10)*(1.+2.5*(1.-uDay)*exp(-tp/70.)), rf);
+      gc=mix(gc, pc, pm*exp(-tp/600.));
+    }
+  }
+  float far=smoothstep(700.,4500.,tt);
+  gc=mix(gc, base, far);
+  float a=mg*max(1.-smoothstep(120.,520.,tt), road*(1.-far));
+  return vec4(gc,a);
+}
+
+void main(){
+  vec3 d; float alt; float az;
+  if(uPass<0.5){
+    az=vN.x*3.14159265; alt=mix(-0.15,1.5707963,vN.y*.5+.5);
+    d=vec3(cos(alt)*sin(az), sin(alt), -cos(alt)*cos(az));
+    if(uBake<0.5) gl_FragColor=bakeNight(d,az,alt); else gl_FragColor=bakeDay(d,az,alt);
+    return;
+  }
+  d=normalize(uF + vN.x*uAspect*uTan*uR + vN.y*uTan*uU);
+  alt=asin(clamp(d.y,-1.,1.));
+  az=atan(d.x,-d.z);
+  if(uPass>1.5 && uPass<2.5){
+    vec2 uv=vec2(az/6.2831853+0.5, clamp((alt+0.15)/1.7207963,0.,1.));
+    vec4 n4=texture2D(uTex,uv);
+    vec3 col=mix(n4.rgb, texture2D(uTexD,uv).rgb, uDay);
+    float night=1.-uDay;
+    if(night>0.01){
+      float m=n4.a;
+      float ext=smoothstep(0.0,0.30,alt);
+      vec3 ad=abs(d); vec2 fuv; float face;
+      if(ad.y>=ad.x && ad.y>=ad.z){ fuv=d.xz/ad.y; face=1.; }
+      else if(ad.x>=ad.z){ fuv=d.yz/ad.x; face=2.+step(0.,d.x); }
+      else { fuv=d.xy/ad.z; face=4.+step(0.,d.z); }
+      fuv=atan(fuv)*1.2732395;
+      float lg=log2(1./(6.0*1.2732395*uPx)), n0=exp2(floor(lg)), wf=fract(lg);
+      float pS=0.05+0.90*m, c0=1./(n0*1.2732395*uPx);
+      vec3 du=(1.-wf)*(dust(fuv*n0, face, c0, pS)+dust(fuv*n0+37.5, face+21., c0, pS))
+             +wf*(dust(fuv*n0*2., face+9., c0*.5, pS)+dust(fuv*n0*2.+37.5, face+33., c0*.5, pS));
+      col+=night*ext*(0.34+0.86*m)*du;
+      float ma=acos(clamp(dot(d,uMoon),-1.,1.));
+      if(ma<0.16){
+        float disc=1.-smoothstep(0.0165-uPx,0.0165+uPx,ma);
+        vec3 sc=normalize(uMoon+0.0125*normalize(vec3(-0.75,0.62,0.22)));
+        float lit=disc*smoothstep(0.0170-uPx,0.0170+uPx,acos(clamp(dot(d,sc),-1.,1.)));
+        col+=night*(vec3(0.96,0.95,0.86)*lit+vec3(0.030,0.036,0.052)*disc+vec3(0.45,0.55,0.75)*exp(-ma/0.034)*0.07);
+      }
+    }
+    if(uDay>0.01){
+      float sa=acos(clamp(dot(d,uSun),-1.,1.));
+      col=mix(col, vec3(1.,0.98,0.90), uDay*(1.-smoothstep(0.020-uPx,0.020+uPx,sa)));
+    }
+    col+=(h21(gl_FragCoord.xy, fract(uTime)*61.)-0.5)*0.016;
+    gl_FragColor=vec4(col,1.);
+    return;
+  }
+  if(uPass>2.5){ gl_FragColor=landAt(az,alt); return; }
+  float e=uPx*0.75;
+  if(uScene>0.5 && uScene<1.5) gl_FragColor=sceneSea(d,az,alt,e);
+  else if(uScene>2.5 && uScene<3.5) gl_FragColor=sceneEmbers(az,alt);
+  else if(uScene>3.5) gl_FragColor=sceneDrive(d,az,alt,e);
+  else gl_FragColor=vec4(0.);
+}`;
+const FS_LAND = `
+precision highp float;
+varying vec2 vN;
+uniform float uScene, uDay, uTexel, uRows;
+uniform vec3 uSun, uMoon;
+uniform sampler2D uSky;
+const mat2 M2=mat2(0.8,-0.6,0.6,0.8);
+const vec2 VC=vec2(631.,-1579.);
+float sq(float x){ return x*x; }
+float wrapA(float a){ return atan(sin(a),cos(a)); }
+float h2(vec2 p){ vec3 p3=fract(vec3(p.xyx)*.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+vec3 noised(vec2 x){
+  vec2 i=floor(x), f=fract(x); vec2 u=f*f*(3.-2.*f), du=6.*f*(1.-f);
+  float a=h2(i), b=h2(i+vec2(1.,0.)), c=h2(i+vec2(0.,1.)), d=h2(i+vec2(1.,1.));
+  return vec3(a+(b-a)*u.x+(c-a)*u.y+(a-b-c+d)*u.x*u.y, du*(vec2(b-a,c-a)+(a-b-c+d)*u.yx));
+}
+float n2(vec2 x){ vec2 i=floor(x), f=fract(x); vec2 u=f*f*(3.-2.*f); return mix(mix(h2(i),h2(i+vec2(1.,0.)),u.x), mix(h2(i+vec2(0.,1.)),h2(i+vec2(1.,1.)),u.x), u.y); }
+float fb(vec2 p){ float a=.5, s=0.; for(int i=0;i<4;i++){ s+=a*n2(p); p=M2*p*2.03; a*=.5; } return s; }
+float terr5(vec2 p){ float a=0., b=1.; vec2 d=vec2(0.); for(int i=0;i<5;i++){ vec3 n=noised(p); d+=n.yz; a+=b*n.x/(1.+dot(d,d)); b*=.5; p=M2*p*2.; } return a; }
+float terr9(vec2 p){ float a=0., b=1.; vec2 d=vec2(0.); for(int i=0;i<9;i++){ vec3 n=noised(p); d+=n.yz; a+=b*n.x/(1.+dot(d,d)); b*=.5; p=M2*p*2.; } return a; }
+float terr(vec2 p, float hi){ return hi>0.5 ? terr9(p) : terr5(p); }
+
+float land(vec2 p, float hi){
+  float r=length(p);
+  if(uScene<0.5){
+    float t=terr(p*0.00042+vec2(1.7,4.3),hi);
+    float v=pow(smoothstep(260.,3400.,length(p-vec2(0.,-950.))),1.6);
+    return mix(-14., t*1750.-260., v);
+  }
+  if(uScene<1.5){
+    float t=terr(p*0.0005+vec2(9.,2.),hi);
+    return t*1150.*smoothstep(2200.,5200.,r)-540.;
+  }
+  if(uScene<2.5){
+    float t=terr(p*0.0011+vec2(5.,1.),hi);
+    return t*270.*smoothstep(60.,900.,r)+(11.*n2(p*0.07)+5.*n2(p*0.21))*smoothstep(90.,170.,r);
+  }
+  if(uScene<3.5){
+    float dc=length(p-VC);
+    float cone=560.-0.40*dc-70.*smoothstep(100.,30.,dc)+45.*(terr(p*0.006,hi)-0.55)*smoothstep(1500.,300.,dc);
+    return max(cone, 9.*terr(p*0.004+vec2(3.,3.),hi));
+  }
+  float t=terr(p*0.00033+vec2(2.,8.),hi);
+  return t*1550.*pow(smoothstep(2300.,9500.,r),1.6)+0.5*n2(p*0.05)*smoothstep(30.,200.,r);
+}
+vec3 skyDisp(vec3 dir){
+  float az=atan(dir.x,-dir.z), alt=asin(clamp(dir.y,-1.,1.));
+  return texture2D(uSky, vec2(az/6.2831853+.5, clamp((alt+.15)/1.7207963,0.,1.))).rgb;
+}
+vec3 skyLin(vec3 dir){ vec3 c=skyDisp(dir); return c*c; }
+vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.,1.); }
+vec3 disp(vec3 c){ return pow(aces(c), vec3(1./2.2)); }
+float shadow(vec3 p, vec3 L){
+  float sh=1., st=10.;
+  for(int i=0;i<24;i++){ vec3 pp=p+L*st; float hh=pp.y-land(pp.xz,0.); sh=min(sh, 9.*hh/st); if(sh<0.02) break; st+=max(9., hh*0.7); }
+  return clamp(sh,0.,1.);
+}
+float lavaE(vec2 p){
+  vec2 q=p-VC; float rad=length(q), ang=atan(q.x,q.y);
+  float w=n2(vec2(ang*9.+2.2*n2(vec2(rad*0.004,ang*2.)), rad*0.0015));
+  float ch=smoothstep(0.050,0.0,abs(w-0.5))*smoothstep(1500.,420.,rad)*smoothstep(35.,95.,rad)*(0.30+1.5*exp(-rad/430.));
+  float lake=smoothstep(88.,48.,rad)*1.7;
+  float cr=smoothstep(0.040,0.,abs(n2(p*0.30)-0.5))*smoothstep(240.,14.,length(p))*smoothstep(0.42,0.60,n2(p*0.035+5.))*0.7;
+  float pool=smoothstep(0.035,0.,abs(fb(p*0.0035+3.)-0.47))*smoothstep(260.,620.,length(p))*smoothstep(1400.,900.,rad)*0.8;
+  return ch+lake+cr+pool*0.25;
+}
+vec3 shade(vec3 p, vec3 rd, float t){
+  float e=max(0.35, uTexel*t*1.15);
+  float h0=land(p.xz,1.);
+  vec3 n=normalize(vec3(h0-land(p.xz+vec2(e,0.),1.), e, h0-land(p.xz+vec2(0.,e),1.)));
+  float el=max(6., 0.012*t), l0=land(p.xz,0.);
+  vec3 nl=normalize(vec3(l0-land(p.xz+vec2(el,0.),0.), el, l0-land(p.xz+vec2(0.,el),0.)));
+  vec3 L=uDay>0.5 ? uSun : uMoon;
+  float dif=clamp(dot(n,L),0.,1.);
+  float sh=smoothstep(-0.12,0.30,dot(nl,L));
+  float nz=fb(p.xz*0.02), nf=n2(p.xz*0.45), ng=n2(p.xz*3.1);
+  vec3 alb; vec3 emi=vec3(0.);
+  if(uScene<0.5){
+    vec3 rock=mix(vec3(0.150,0.135,0.125), vec3(0.31,0.28,0.25), nz)*(0.78+0.44*nf);
+    vec3 veg=mix(vec3(0.030,0.062,0.026), vec3(0.085,0.125,0.045), nf)*(0.8+0.4*ng);
+    alb=mix(rock, veg, smoothstep(0.62,0.86,nl.y)*smoothstep(760.,330.+260.*nz,p.y));
+    alb=mix(alb, vec3(0.20,0.19,0.16)*(0.8+0.4*ng), smoothstep(3.5,0.5,p.y));
+    alb=mix(alb, vec3(0.80,0.84,0.93), smoothstep(0.40,0.72,nl.y)*(0.55+0.45*smoothstep(0.35,0.75,n.y))*smoothstep(620.+240.*nz,900.+240.*nz,p.y));
+  } else if(uScene<1.5){
+    vec3 rock=mix(vec3(0.13,0.12,0.11), vec3(0.27,0.24,0.20), nz)*(0.8+0.4*nf);
+    alb=mix(rock, vec3(0.045,0.085,0.035)*(0.8+0.5*nf), smoothstep(0.60,0.86,nl.y)*smoothstep(8.,40.,p.y));
+  } else if(uScene<2.5){
+    vec3 can=mix(vec3(0.012,0.030,0.014), vec3(0.040,0.070,0.026), nf)*(0.30+0.95*n2(p.xz*0.9))*(0.55+0.8*n2(p.xz*0.13));
+    can=mix(can, vec3(0.050,0.058,0.020), smoothstep(0.62,0.80,n2(p.xz*0.021+9.))*0.6);
+    vec3 grass=mix(vec3(0.050,0.078,0.026), vec3(0.105,0.120,0.050), ng)*(0.75+0.5*nf);
+    alb=mix(grass, can, smoothstep(85.,150.,length(p.xz)));
+  } else if(uScene<3.5){
+    alb=mix(vec3(0.020,0.018,0.020), vec3(0.060,0.050,0.048), nz)*(0.7+0.6*ng);
+    float E=lavaE(p.xz);
+    emi=mix(vec3(1.0,0.13,0.01), vec3(1.0,0.72,0.22), clamp(E*0.6,0.,1.))*E*mix(3.4,1.5,uDay);
+    float dc=length(p.xz-VC);
+    emi+=alb*vec3(1.0,0.30,0.06)*(1.8*exp(-dc/650.)+0.5*exp(-length(p.xz)/160.))*mix(1.,0.25,uDay);
+  } else {
+    vec3 sand=mix(vec3(0.30,0.235,0.16), vec3(0.42,0.35,0.25), nz);
+    vec3 scrub=mix(vec3(0.115,0.135,0.065), vec3(0.20,0.20,0.10), nf);
+    alb=mix(sand, scrub, smoothstep(0.40,0.62,n2(p.xz*0.035)+0.25*ng))*(0.82+0.36*ng);
+    alb=mix(alb, mix(vec3(0.17,0.115,0.085), vec3(0.30,0.205,0.150), fb(vec2(p.y*0.012, nz*3.)))*(0.8+0.4*nf), smoothstep(40.,160.,p.y));
+  }
+  vec3 col;
+  if(uDay>0.5) col=alb*(vec3(1.26,1.10,0.92)*1.65*dif*sh+vec3(0.17,0.27,0.44)*(0.35+0.65*n.y)+vec3(0.09,0.075,0.055)*clamp(0.4-n.y*0.4,0.,1.));
+  else col=alb*(vec3(0.075,0.095,0.14)*dif*sh+vec3(0.0055,0.0075,0.0125)*(0.4+0.6*n.y));
+  return col+emi;
+}
+float march(vec3 ro, vec3 rd, float tmin, float tmax){
+  float t=tmin;
+  for(int i=0;i<260;i++){
+    vec3 p=ro+rd*t; float h=p.y-land(p.xz,0.);
+    if(h<0.0015*t) return t;
+    t+=max(0.45*h, 0.5+0.0065*t);
+    if(t>tmax) break;
+  }
+  return -1.;
+}
+float hmaxOf(){ return uScene<0.5 ? 2100. : uScene<1.5 ? 760. : uScene<2.5 ? 460. : uScene<3.5 ? 640. : 1900.; }
+vec3 fogged(vec3 d, vec3 rd, float t){
+  vec3 fc=skyDisp(normalize(vec3(rd.x,0.035,rd.z)));
+  float k=(uDay>0.5 ? 0.000065 : 0.000105)*(uScene>1.5 && uScene<2.5 ? 4.5 : uScene>3.5 ? 0.6 : 1.);
+  return mix(d, fc, 1.-exp(-t*k));
+}
+vec4 render(float az, float alt){
+  vec3 rd=vec3(cos(alt)*sin(az), sin(alt), -cos(alt)*cos(az));
+  float camY=uScene<0.5 ? land(vec2(0.),1.)+7. : uScene<1.5 ? 7. : uScene<2.5 ? land(vec2(0.),1.)+3. : uScene<3.5 ? land(vec2(0.),1.)+10. : 2.4;
+  vec3 ro=vec3(0.,camY,0.);
+  vec3 L=uDay>0.5 ? uSun : uMoon;
+  float hm=hmaxOf(), tmax=16000.;
+  if(rd.y>0.001) tmax=min(tmax,(hm-camY)/rd.y);
+  float tmin=1.5, tw=-1., t=-1.;
+  vec3 col=vec3(0.); float a=0.;
+  if(uScene<0.5 && rd.y<-0.0004) tw=camY/(-rd.y);
+  if(uScene>0.5 && uScene<1.5){ tmin=2000.; if(rd.y<-0.00001) tmax=min(tmax, camY/(-rd.y)); }
+  if(uScene>3.5 && rd.y<-0.0003){
+    float tp=(camY-0.3)/(-rd.y);
+    if(tp<2600.) t=tp; else { t=march(ro,rd,2400.,tmax); if(t<0.) t=min(tp,15500.); }
+  } else if(tmax>tmin) t=march(ro,rd,tmin, tw>0. ? min(tmax,tw) : tmax);
+  if(t>0.){ col=fogged(disp(shade(ro+rd*t,rd,t)),rd,t); a=1.; }
+  else if(tw>0. && tw<16000.){
+    vec3 p=ro+rd*tw;
+    vec2 rip=vec2(n2(p.xz*vec2(0.30,0.07))-0.5, n2(p.xz*vec2(0.07,0.30)+7.)-0.5)*0.045+vec2(n2(p.xz*1.7)-0.5, n2(p.xz*1.7+3.)-0.5)*0.012*exp(-tw/300.);
+    vec3 n=normalize(vec3(rip.x,1.,rip.y));
+    vec3 r=reflect(rd,n); r.y=abs(r.y)+0.002; r=normalize(r);
+    float F=0.03+0.97*pow(1.-clamp(dot(-rd,n),0.,1.),5.);
+    float tr=march(p+vec3(0.,0.6,0.), r, 6., min(15000.,(hm-p.y)/r.y));
+    vec3 rc=tr>0. ? shade(p+r*tr,r,tr) : skyLin(r);
+    if(tr>0.){ vec3 fc=skyLin(normalize(vec3(r.x,0.035,r.z))); rc=mix(rc, fc, 1.-exp(-(tr+tw)*(uDay>0.5 ? 0.000065 : 0.000105))); }
+    else if(uDay<0.5) rc+=vec3(0.62,0.66,0.80)*(pow(max(dot(r,L),0.),1400.)*9.+pow(max(dot(r,L),0.),90.)*0.05);
+    vec3 deep=uDay>0.5 ? vec3(0.006,0.030,0.040) : vec3(0.0004,0.0008,0.0016);
+    col=fogged(disp(mix(deep, rc*0.93, F)),rd,tw); a=1.;
+  }
+  if(uScene>2.5 && uScene<3.5 && a<0.5){
+    float dz=wrapA(az-0.38);
+    float top=atan(495.-camY, 1700.);
+    float cr=length(vec2(dz, alt-top));
+    float glow=exp(-cr/0.075)*0.9+exp(-max(alt,0.)/0.12)*exp(-sq(dz/1.3))*0.30;
+    vec3 gc=mix(vec3(1.,0.42,0.10), vec3(1.,0.80,0.42), clamp(exp(-cr/0.025),0.,1.));
+    float ga=clamp(glow,0.,1.)*(uDay>0.5 ? 0.45 : 0.85);
+    float y=(alt-top)/0.27;
+    if(y>0.){
+      float wdt=0.022+0.17*y;
+      float xx=dz-0.10*y*y+(fb(vec2(y*2.6,1.))-0.5)*0.16*y;
+      float dn=smoothstep(wdt, wdt*0.25, abs(xx))*smoothstep(1.05,0.55,y)*(0.35+1.1*fb(vec2(xx*16., y*8.)));
+      dn=clamp(dn,0.,1.);
+      vec3 smk=uDay>0.5 ? mix(vec3(0.30,0.27,0.26), vec3(0.66,0.64,0.64), fb(vec2(xx*9.+3., y*5.))) : vec3(0.030,0.026,0.030);
+      smk=mix(vec3(1.,0.36,0.08)*(uDay>0.5 ? 0.9 : 0.8), smk, smoothstep(0.,uDay>0.5 ? 0.10 : 0.42,y));
+      gc=mix(gc, smk, dn); ga=max(ga*(1.-dn*0.6), dn*0.92);
+    }
+    col=gc; a=ga;
+  }
+  if(uScene>1.5 && uScene<2.5){
+    float cells=44.; float tc=(az+3.14159265)/6.2831853*cells; float ci=floor(tc);
+    float near=0., tone=0.;
+    for(int k=-1;k<=1;k++){
+      float c=ci+float(k);
+      if(h2(vec2(c,3.))<0.36) continue;
+      float cx=(c+0.5+0.5*(h2(vec2(c,7.))-0.5))/cells*6.2831853-3.14159265;
+      float ht=0.17+0.26*h2(vec2(c,11.));
+      float y=(alt+0.10)/ht;
+      if(y<0.||y>1.) continue;
+      float tier=fract((1.-y)*11.);
+      float w=ht*0.185*(1.-y)*(0.46+0.54*tier);
+      w=max(w, 0.0042*step(y,0.22));
+      float dx=abs(wrapA(az-cx))*cos(alt);
+      float m=smoothstep(w+0.0012, w-0.0012, dx);
+      if(m>near){ near=m; tone=(0.35+0.65*tier)*(0.6+0.4*h2(vec2(c,17.)))*(0.75+0.5*n2(vec2(az*900.,alt*900.))); }
+    }
+    vec3 pine=uDay>0.5 ? mix(vec3(0.010,0.022,0.012), vec3(0.070,0.115,0.045), tone) : vec3(0.0035,0.005,0.006)*(0.6+0.8*tone);
+    col=mix(col, pine, near); a=max(a, near);
+  }
+  return vec4(col,a);
+}
+void main(){
+  float az=vN.x*3.14159265, alt=mix(-0.45,0.525,vN.y*.5+.5), q=0.975/uRows*0.25;
+  vec4 s1=render(az,alt-q), s2=render(az,alt+q);
+  float a=s1.a+s2.a;
+  gl_FragColor=vec4((s1.rgb*s1.a+s2.rgb*s2.a)/max(a,0.0001), a*0.5);
+}`;
+const VS_STAR = `
+attribute vec3 aPos; attribute float aMag; attribute vec3 aCol; attribute float aPhase;
+uniform vec3 uR, uU, uF; uniform float uTan, uAspect, uDpr, uTime, uZoom, uMotion, uBoost, uNight;
+varying vec3 vCol; varying float vA; varying float vS; varying float vSp;
+void main(){
+  float xc=dot(aPos,uR), yc=dot(aPos,uU), zc=dot(aPos,uF);
+  gl_Position=vec4(xc/(uAspect*uTan), yc/uTan, 0., zc);
+  float b=pow(10., -0.4*(aMag-1.));
+  float ext=smoothstep(0.0,0.30,aPos.y);
+  float tw=1.+uMotion*(0.12+0.38*(1.-ext))*sin(uTime*(1.6+aPhase*3.4)+aPhase*50.);
+  b*=(0.07+0.93*ext)*tw;
+  float ps=clamp((0.7+4.6*pow(b,0.42))*uDpr*uZoom*uBoost, 1., 160.);
+  gl_PointSize=ps; vS=ps; vSp=step(1.5,uBoost);
+  vA=clamp(pow(b,0.34)*2.1, 0.22, 1.)*mix(uNight, 1., step(1.5,uBoost));
+  vCol=aCol*mix(vec3(1.,.82,.60), vec3(1.), ext);
+}`;
+const FS_STAR = `
+precision mediump float;
+varying vec3 vCol; varying float vA; varying float vS; varying float vSp;
+void main(){
+  vec2 p=gl_PointCoord*2.-1.; float d=dot(p,p);
+  float dist=sqrt(d)*vS*0.5;
+  float rc=mix(max(0.55, vS*0.17), vS*0.05+1.0, vSp);
+  float v=1.-smoothstep(rc-0.55, rc+0.55, dist);
+  v+=mix(0.16*exp(-dist/(vS*0.09+0.5)), 0.60*exp(-dist/(vS*0.055))+0.14*exp(-dist/(vS*0.20)), vSp)*clamp((vS-4.)/6.,0.,1.);
+  float ax=abs(p.x)*vS*0.5, ay=abs(p.y)*vS*0.5;
+  v+=vSp*0.95*((1.-smoothstep(0.45,1.25,ay))*exp(-abs(p.x)*3.4)+(1.-smoothstep(0.45,1.25,ax))*exp(-abs(p.y)*3.4));
+  v*=1.-smoothstep(0.82,1.,sqrt(d));
+  gl_FragColor=vec4(vCol*vA*v, 1.);
+}`;
+const VS_LINE = `
+attribute vec3 aPos; uniform vec3 uR, uU, uF; uniform float uTan, uAspect;
+void main(){ gl_Position=vec4(dot(aPos,uR)/(uAspect*uTan), dot(aPos,uU)/uTan, 0., dot(aPos,uF)); }`;
+const FS_LINE = 'precision mediump float; uniform vec3 uCol; void main(){ gl_FragColor=vec4(uCol,1.); }';
+
+function program(vs, fs) {
+  const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < n; i++) { const info = gl.getActiveUniform(p, i); u[info.name] = gl.getUniformLocation(p, info.name); }
+  return { p, u };
+}
+
+// the sky is generated from a seed, so this exact sky belongs to this site
+function mulberry(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let seed = 2166136261; for (const ch of 'Waleed Khalid') { seed ^= ch.charCodeAt(0); seed = Math.imul(seed, 16777619); }
+const rnd = mulberry(seed);
+const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(TAU * rnd());
+const GC = norm(dirOf(-40 * D2R, 0));
+const NG = norm(cross(GC, norm([0.3, 0.95, 0])));
+const GE = cross(NG, GC);
+
+let progSky, progStar, progLine, quad, bufStars, nStars, bufProj, bufLines, nLineVerts, skyTex, dayTex;
+const SUN = dirOf(125 * D2R, 24 * D2R), MOON = dirOf(9 * D2R, 13 * D2R);
+const TEXCAP = parseInt((/[?&]tex=(\d+)/.exec(location.search) || [])[1], 10) || 0;
+let progLand, landW = 4096, job = null; const jobs = [], lands = {};
+const shown = { scene: -1, n: null, d: null };
+function initGL() {
+  progSky = program(VS_QUAD, FS_SKY); progStar = program(VS_STAR, FS_STAR); progLine = program(VS_LINE, FS_LINE); progLand = program(VS_QUAD, FS_LAND);
+  quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
+  // paint the Milky Way, glow and gradient once into a panorama, then reuse it every frame
+  const maxT = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+  const big = maxT >= 8192 && Math.max(window.innerWidth, window.screen ? window.screen.width : 0) >= 1000;
+  const bake = (TW, day) => {
+    const TH = TW / 4, tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TW, TH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error('Could not prepare the sky panorama');
+    gl.viewport(0, 0, TW, TH); gl.disable(gl.BLEND); gl.useProgram(progSky.p);
+    gl.uniform3fv(progSky.u.uNg, NG); gl.uniform3fv(progSky.u.uGc, GC); gl.uniform3fv(progSky.u.uSun, SUN); gl.uniform3fv(progSky.u.uMoon, MOON);
+    gl.uniform1f(progSky.u.uPass, 0); gl.uniform1f(progSky.u.uBake, day ? 1 : 0); gl.uniform1i(progSky.u.uTex, 0); gl.uniform1i(progSky.u.uTexD, 1); gl.uniform1i(progSky.u.uLandN, 2); gl.uniform1i(progSky.u.uLandD, 3);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    const bq = gl.getAttribLocation(progSky.p, 'aP'); gl.enableVertexAttribArray(bq); gl.vertexAttribPointer(bq, 2, gl.FLOAT, false, 0, 0);
+    gl.enable(gl.SCISSOR_TEST);
+    for (let k = 0; k < 16; k++) { gl.scissor(k * TW / 16, 0, TW / 16, TH); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
+    gl.disable(gl.SCISSOR_TEST);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.deleteFramebuffer(fb);
+    return tex;
+  };
+  skyTex = bake(TEXCAP ? Math.max(2048, TEXCAP) : big ? 8192 : Math.min(4096, maxT), false);
+  dayTex = bake(TEXCAP ? Math.max(2048, TEXCAP) : Math.min(4096, maxT), true);
+  landW = TEXCAP || (big ? 8192 : Math.min(4096, maxT));
+
+  const data = [];
+  const mag = (lo, hi) => { const a = Math.pow(10, 0.5 * lo), b = Math.pow(10, 0.5 * hi); return Math.log10(rnd() * (b - a) + a) / 0.5; };
+  const push = (p, m) => {
+    const t = rnd(); const c = t < 0.22 ? [0.72, 0.83, 1] : t > 0.8 ? [1, 0.78, 0.52] : [1, 0.97, 0.92];
+    data.push(p[0], p[1], p[2], m, c[0], c[1], c[2], rnd());
+  };
+  for (let i = 0; i < 7000; i++) { const y = rnd() * 1.06 - 0.06, ph = rnd() * TAU, r = Math.sqrt(Math.max(0, 1 - y * y)); push([r * Math.cos(ph), y, r * Math.sin(ph)], mag(1.4, 8.4)); }
+  for (let i = 0; i < 38000; i++) {
+    const lat = gauss() * 0.075, lon = (rnd() < 0.5 ? -1 : 1) * Math.pow(rnd(), 1.5) * Math.PI;
+    const cl = Math.cos(lat), sl = Math.sin(lat), co = Math.cos(lon), so = Math.sin(lon);
+    const p = [cl * (co * GC[0] + so * GE[0]) + sl * NG[0], cl * (co * GC[1] + so * GE[1]) + sl * NG[1], cl * (co * GC[2] + so * GE[2]) + sl * NG[2]];
+    if (p[1] > -0.06) push(p, mag(5.6, 9.8));
+  }
+  nStars = data.length / 8;
+  bufStars = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bufStars); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+
+  const pd = [];
+  STARS.forEach((s, i) => { const warm = i % 3 === 1; pd.push(s.p[0], s.p[1], s.p[2], s.mag - 1.1, 1, warm ? 0.9 : 0.97, warm ? 0.74 : 0.9, (i * 0.37) % 1); });
+  bufProj = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bufProj); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pd), gl.STATIC_DRAW);
+
+  const ld = [];
+  SKY.forEach((c) => c.lines.forEach(([a, b]) => { ld.push(...c.stars[a].p, ...c.stars[b].p); }));
+  nLineVerts = ld.length / 3;
+  bufLines = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bufLines); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ld), gl.STATIC_DRAW);
+}
+
+/* ------------------------------------------------- landscape rendering */
+function wantLand(scene) {
+  jobs.length = 0;
+  const first = view.day ? 1 : 0;
+  [first, 1 - first].forEach((day) => { if (!lands[scene + ':' + day]) jobs.push({ scene, day }); });
+  showLand(scene);
+}
+function showLand(scene) {
+  const n = lands[scene + ':0'], d = lands[scene + ':1'];
+  if (!n && !d) return;
+  shown.scene = scene; shown.n = n || d; shown.d = d || n;
+  Object.keys(lands).forEach((k) => { if (+k.split(':')[0] !== scene) { gl.deleteTexture(lands[k]); delete lands[k]; } });
+  $('busy').hidden = !!(n && d) || true;
+}
+function bakeStep() {
+  if (!job) {
+    const nx = jobs.shift(); if (!nx) return;
+    const TW = landW, TH = TW / 8, tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TW, TH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    job = { scene: nx.scene, day: nx.day, tex, fb, TW, TH, k: 0, n: 64 };
+  }
+  const j = job;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, j.fb); gl.viewport(0, 0, j.TW, j.TH); gl.disable(gl.BLEND);
+  gl.useProgram(progLand.p);
+  gl.uniform1f(progLand.u.uScene, j.scene); gl.uniform1f(progLand.u.uDay, j.day); gl.uniform1f(progLand.u.uTexel, TAU / j.TW); gl.uniform1f(progLand.u.uRows, j.TH); gl.uniform3fv(progLand.u.uSun, SUN); gl.uniform3fv(progLand.u.uMoon, MOON);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, j.day ? dayTex : skyTex); gl.uniform1i(progLand.u.uSky, 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  const a = gl.getAttribLocation(progLand.p, 'aP'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+  gl.enable(gl.SCISSOR_TEST);
+  const per = TEXCAP ? 64 : 3;
+  for (let i = 0; i < per && j.k < j.n; i++, j.k++) { gl.scissor(Math.round(j.k * j.TW / j.n), 0, Math.ceil(j.TW / j.n), j.TH); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
+  gl.disable(gl.SCISSOR_TEST);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, canvas.width, canvas.height);
+  if (j.k >= j.n) {
+    gl.deleteFramebuffer(j.fb); gl.bindTexture(gl.TEXTURE_2D, j.tex); gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    lands[j.scene + ':' + j.day] = j.tex; job = null;
+    if (j.scene === view.scene) showLand(j.scene); else { gl.deleteTexture(j.tex); delete lands[j.scene + ':' + j.day]; }
+  }
+  $('busy').hidden = !(job || jobs.length) || shown.scene === view.scene;
+}
+
+/* --------------------------------------------------------------- camera */
+const SCENES = [{ name: 'Mountains', alt: 23, min: 6, fov: 72 }, { name: 'Sea', alt: 20, min: -9 }, { name: 'Forest', alt: 24, min: 6 }, { name: 'Lava', alt: 23, min: 6 }, { name: 'Drive', alt: 15, min: -14, fov: 76 }];
+const view = { scene: 0, day: false, mix: 0 };
+try { const v = JSON.parse(localStorage.getItem('wk-sky-view') || '{}'); if (v.scene >= 0 && v.scene < SCENES.length) view.scene = v.scene | 0; view.day = !!v.day; view.mix = view.day ? 1 : 0; } catch (e) { /* storage unavailable */ }
+const HOME = { az: 0, alt: SCENES[view.scene].alt * D2R, fov: (SCENES[view.scene].fov || 70) * D2R }, LIMIT = 108 * D2R;
+const cam = { az: HOME.az, alt: HOME.alt, fov: HOME.fov, vaz: 0, valt: 0 };
+let anim = null, W = 1, H = 1, dpr = 1, R = [1, 0, 0], U = [0, 1, 0], F = [0, 0, -1], tanH = 1, aspect = 1;
+function basis() {
+  F = dirOf(cam.az, cam.alt); R = [Math.cos(cam.az), 0, Math.sin(cam.az)]; U = cross(R, F);
+  tanH = Math.tan(cam.fov / 2); aspect = W / H;
+}
+function project(p) {
+  const z = dot(p, F); if (z <= 0.05) return null;
+  const x = dot(p, R) / (z * aspect * tanH), y = dot(p, U) / (z * tanH);
+  if (Math.abs(x) > 1.15 || Math.abs(y) > 1.15) return null;
+  return [(x * 0.5 + 0.5) * W, (0.5 - y * 0.5) * H];
+}
+function resize() {
+  W = canvas.clientWidth || window.innerWidth; H = canvas.clientHeight || window.innerHeight;
+  dpr = Math.min(window.devicePixelRatio || 1, 2) * scale;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+  requestDraw();
+}
+function flyTo(az, alt, fov, ms) {
+  if (reduceMotion || !ms) { cam.az = az; cam.alt = alt; cam.fov = fov; anim = null; requestDraw(); return; }
+  anim = { t0: performance.now(), ms, a0: cam.az, a1: cam.az + wrap(az - cam.az), b0: cam.alt, b1: alt, f0: cam.fov, f1: fov };
+  cam.vaz = cam.valt = 0; requestDraw();
+}
+
+/* --------------------------------------------------------------- labels */
+const layer = $('labels'), ring = $('ring');
+SKY.forEach((c) => { c.lab = el('div', 'lab con', c.name + ', ' + c.years); layer.appendChild(c.lab); c.labDir = dirOf((c.az + c.label[0]) * D2R, (c.alt + c.label[1]) * D2R); c.labLow = dirOf(c.az * D2R, (c.alt - 11.5) * D2R); });
+STARS.forEach((s) => { s.lab = el('div', 'lab st', s.name); layer.appendChild(s.lab); });
+let selected = -1, hover = -1;
+function place(node, xy, dx, dy) {
+  if (!xy) { node.classList.remove('on'); return; }
+  node.style.transform = 'translate(' + Math.round(xy[0] + dx) + 'px,' + Math.round(xy[1] + dy) + 'px)';
+  node.classList.add('on');
+}
+function updateLabels() {
+  let near = -1, best = 0.82;
+  SKY.forEach((c, i) => { const v = dot(c.dir, F); if (v > best) { best = v; near = i; } });
+  SKY.forEach((c) => { const top = W < 760 ? 220 : 116; let xy = project(c.labDir); if (!xy || xy[1] < top) xy = project(c.labLow); if (xy && !c.w) c.w = c.lab.offsetWidth; place(c.lab, xy && xy[1] > top && xy[1] < H - 150 ? xy : null, -(c.w || 0) / 2, -12); });
+  STARS.forEach((s, i) => {
+    const show = i === selected || i === hover || (s.ci === near && cam.fov < 46 * D2R && W > 620);
+    s.xy = project(s.p);
+    place(s.lab, show ? s.xy : null, 14, -9);
+    s.lab.classList.toggle('found', found.has(s.id));
+  });
+  place(ring, selected >= 0 ? STARS[selected].xy : null, 0, 0);
+}
+
+/* ----------------------------------------------------------------- draw */
+let raf = 0, needs = true, scale = 1, slow = 0, lastT = 0, mixT = 0;
+function requestDraw() { needs = true; if (!raf && glOk) raf = requestAnimationFrame(frame); }
+function common(pr) {
+  gl.useProgram(pr.p);
+  gl.uniform3fv(pr.u.uR, R); gl.uniform3fv(pr.u.uU, U); gl.uniform3fv(pr.u.uF, F);
+  gl.uniform1f(pr.u.uTan, tanH); gl.uniform1f(pr.u.uAspect, aspect);
+}
+function bindStars(buf) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  const names = ['aPos', 'aMag', 'aCol', 'aPhase'], sizes = [3, 1, 3, 1]; let off = 0;
+  names.forEach((nm, i) => { const loc = gl.getAttribLocation(progStar.p, nm); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, sizes[i], gl.FLOAT, false, 32, off); off += sizes[i] * 4; });
+}
+function frame(now) {
+  raf = 0;
+  if (plain.hidden === false) return;
+  const time = now / 1000;
+  if (job || jobs.length) bakeStep();
+  if (lastT && now - lastT < 200) { slow = now - lastT > 55 ? slow + 1 : Math.max(0, slow - 1); if (slow > 90 && scale > 0.86) { scale = 0.85; slow = 0; resize(); } }
+  lastT = now;
+  if (anim) {
+    const k = clamp((now - anim.t0) / anim.ms, 0, 1), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+    cam.az = anim.a0 + (anim.a1 - anim.a0) * e; cam.alt = anim.b0 + (anim.b1 - anim.b0) * e; cam.fov = anim.f0 + (anim.f1 - anim.f0) * e;
+    if (k >= 1) anim = null;
+  } else if (!dragging && (Math.abs(cam.vaz) > 1e-5 || Math.abs(cam.valt) > 1e-5)) {
+    cam.az += cam.vaz; cam.alt += cam.valt; cam.vaz *= 0.93; cam.valt *= 0.93;
+  }
+  cam.az = clamp(cam.az, -LIMIT, LIMIT); cam.alt = clamp(cam.alt, SCENES[view.scene].min * D2R, 86 * D2R); cam.fov = clamp(cam.fov, 16 * D2R, 78 * D2R);
+  basis();
+  const target = view.day ? 1 : 0;
+  if (view.mix !== target) { const stepMix = reduceMotion ? 1 : Math.min(0.06, (now - (mixT || now)) / 900 || 0.02); view.mix = target > view.mix ? Math.min(1, view.mix + stepMix) : Math.max(0, view.mix - stepMix); }
+  mixT = now;
+  const ease = view.mix * view.mix * (3 - 2 * view.mix);
+
+  gl.disable(gl.BLEND);
+  common(progSky);
+  gl.uniform1f(progSky.u.uTime, time % 3600); gl.uniform1f(progSky.u.uPass, 2); gl.uniform1f(progSky.u.uPx, 2 * tanH / canvas.height);
+  gl.uniform1f(progSky.u.uDay, ease); gl.uniform1f(progSky.u.uScene, shown.scene); gl.uniform1f(progSky.u.uMotion, reduceMotion ? 0 : 1);
+  if (shown.n) { gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, shown.n); gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, shown.d); }
+  gl.uniform1i(progSky.u.uLandN, 2); gl.uniform1i(progSky.u.uLandD, 3);
+  gl.uniform3fv(progSky.u.uSun, SUN); gl.uniform3fv(progSky.u.uMoon, MOON);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, dayTex); gl.uniform1i(progSky.u.uTexD, 1);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, skyTex); gl.uniform1i(progSky.u.uTex, 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  const qa = gl.getAttribLocation(progSky.p, 'aP'); gl.enableVertexAttribArray(qa); gl.vertexAttribPointer(qa, 2, gl.FLOAT, false, 0, 0);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+  common(progLine); gl.uniform3f(progLine.u.uCol, 0.46 + 0.14 * ease, 0.53 + 0.07 * ease, 0.68 - 0.08 * ease);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufLines);
+  const la = gl.getAttribLocation(progLine.p, 'aPos'); gl.enableVertexAttribArray(la); gl.vertexAttribPointer(la, 3, gl.FLOAT, false, 0, 0);
+  gl.drawArrays(gl.LINES, 0, nLineVerts);
+
+  common(progStar);
+  gl.uniform1f(progStar.u.uDpr, dpr); gl.uniform1f(progStar.u.uTime, time); gl.uniform1f(progStar.u.uMotion, reduceMotion ? 0 : 1); gl.uniform1f(progStar.u.uNight, 1 - ease);
+  gl.uniform1f(progStar.u.uZoom, Math.pow(Math.tan(31 * D2R) / tanH, 0.45));
+  gl.uniform1f(progStar.u.uBoost, 1); bindStars(bufStars); gl.drawArrays(gl.POINTS, 0, nStars);
+  gl.uniform1f(progStar.u.uBoost, 3.2); bindStars(bufProj); gl.drawArrays(gl.POINTS, 0, STARS.length);
+
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  common(progSky);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.enableVertexAttribArray(qa); gl.vertexAttribPointer(qa, 2, gl.FLOAT, false, 0, 0);
+  if (shown.n) {
+    if (shown.scene === 1) { gl.uniform1f(progSky.u.uPass, 1); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
+    gl.uniform1f(progSky.u.uPass, 3); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if (shown.scene === 3 || shown.scene === 4) { gl.uniform1f(progSky.u.uPass, 1); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
+  }
+
+  updateLabels(); placeCar(time);
+  const moving = anim || dragging || job || jobs.length || view.mix !== target || Math.abs(cam.vaz) > 1e-5 || Math.abs(cam.valt) > 1e-5;
+  if (!reduceMotion || moving || needs) { needs = false; if (!reduceMotion || moving) raf = requestAnimationFrame(frame); }
+}
+
+/* ------------------------------------------------------- scenes and car */
+const carEl = $('car');
+const CAR = norm([0, -2.4, -11]);
+function placeCar(time) {
+  if (shown.scene !== 4) { carEl.style.display = 'none'; return; }
+  const xy = project(CAR);
+  if (!xy) { carEl.style.display = 'none'; return; }
+  const w = (1.95 / 11.26) / (2 * tanH) * H, h = w * 0.6, bob = reduceMotion ? 0 : Math.sin(time * 9) * Math.max(0.5, w * 0.004);
+  carEl.style.display = 'block'; carEl.style.width = w.toFixed(1) + 'px';
+  carEl.style.transform = 'translate(' + (xy[0] - w / 2).toFixed(1) + 'px,' + (xy[1] - h + bob).toFixed(1) + 'px)';
+}
+const sceneBtns = [], dayBtn = $('daynight');
+function syncView() {
+  sceneBtns.forEach((b, i) => b.setAttribute('aria-pressed', i === view.scene ? 'true' : 'false'));
+  dayBtn.setAttribute('aria-pressed', view.day ? 'true' : 'false');
+  dayBtn.lastChild.textContent = view.day ? 'Day' : 'Night';
+  document.body.classList.toggle('day', view.day);
+  try { localStorage.setItem('wk-sky-view', JSON.stringify({ scene: view.scene, day: view.day })); } catch (e) { /* ignore */ }
+}
+function setScene(i) {
+  view.scene = i; HOME.alt = SCENES[i].alt * D2R; HOME.fov = (SCENES[i].fov || 70) * D2R; syncView(); wantLand(i);
+  if (selected < 0) flyTo(cam.az, HOME.alt, HOME.fov, 900);
+  requestDraw();
+}
+function setDay(on) { view.day = !!on; syncView(); requestDraw(); }
+SCENES.forEach((sc, i) => { const b = el('button', 'chip', sc.name); b.type = 'button'; b.addEventListener('click', () => setScene(i)); sceneBtns.push(b); $('scenelist').appendChild(b); });
+dayBtn.addEventListener('click', () => setDay(!view.day));
+syncView();
+
+/* ----------------------------------------------------------- selection */
+const card = $('card');
+function select(i, fly) {
+  selected = i;
+  if (i < 0) { card.hidden = true; document.body.classList.remove('reading'); syncRail(); requestDraw(); return; }
+  const s = STARS[i];
+  $('c-area').textContent = s.area; $('c-pos').textContent = 'Project ' + (i + 1) + ' of ' + STARS.length + '. ' + s.con.name + ', ' + s.con.years + '.'; $('c-title').textContent = s.name; $('c-where').textContent = s.where; $('c-tech').textContent = s.tech ? 'Built with ' + s.tech + '.' : '';
+  const ul = $('c-facts'); ul.textContent = ''; s.facts.forEach((f) => ul.appendChild(el('li', '', f)));
+  card.hidden = false; card.scrollTop = 0; document.body.classList.add('reading');
+  found.add(s.id); saveFound(); syncRail(); $('hint').classList.add('off');
+  if (fly !== false) {
+    const fov = 34 * D2R, narrow = W < 760;
+    flyTo(s.az + (narrow ? 0 : fov * aspect * 0.16), s.alt - (narrow ? fov * 0.22 : 0), fov, 1500);
+  }
+  requestDraw();
+}
+function overview() { select(-1); flyTo(HOME.az, HOME.alt, HOME.fov, 1100); }
+function step(dir) {
+  if (selected < 0) { select(dir > 0 ? 0 : STARS.length - 1); return; }
+  const i = selected + dir;
+  if (i < 0) { overview(); return; }
+  if (i < STARS.length) select(i);
+}
+$('next').addEventListener('click', () => step(1));
+$('prev').addEventListener('click', () => step(-1));
+$('rnext').addEventListener('click', () => step(1));
+$('rprev').addEventListener('click', () => step(-1));
+$('close').addEventListener('click', overview);
+$('home').addEventListener('click', overview);
+$('tour').addEventListener('click', () => select(0));
+
+// the timeline along the bottom: one dot per project, in time order
+const track = $('track');
+track.style.gridTemplateColumns = SKY.map((c) => c.stars.length + 'fr').join(' ');
+SKY.forEach((c) => {
+  const chap = el('div', 'chap'), dots = el('div', 'dots');
+  c.stars.forEach((s) => {
+    const b = el('button', 'dot'); b.type = 'button'; b.title = s.name; b.setAttribute('aria-label', s.name); b.appendChild(el('i'));
+    b.addEventListener('click', () => select(s.index)); s.dot = b; dots.appendChild(b);
+  });
+  const nm = el('button', 'chname'); nm.type = 'button'; nm.appendChild(el('b', '', c.years)); nm.appendChild(document.createTextNode(c.name));
+  nm.addEventListener('click', () => { select(-1); flyTo(c.az * D2R, (c.alt - 6) * D2R, 52 * D2R, 1200); });
+  chap.appendChild(dots); chap.appendChild(nm); c.chap = chap; track.appendChild(chap);
+});
+syncRail = () => {
+  STARS.forEach((s, i) => { s.dot.classList.toggle('seen', found.has(s.id)); s.dot.classList.toggle('now', i === selected); if (i === selected) s.dot.setAttribute('aria-current', 'step'); else s.dot.removeAttribute('aria-current'); });
+  SKY.forEach((c, i) => c.chap.classList.toggle('here', selected >= 0 && STARS[selected].ci === i));
+  $('pos').textContent = selected < 0 ? STARS.length + ' projects, 2021 to today' : (selected + 1) + ' of ' + STARS.length;
+  $('rnext').disabled = $('next').disabled = selected === STARS.length - 1;
+  $('rprev').disabled = selected < 0; $('prev').disabled = false;
+  $('rnext').textContent = selected < 0 ? 'Start' : 'Later';
+};
+syncRail();
+if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) $('hint').textContent = 'Tap Start to travel through time. Drag to look around.';
+function nearest(x, y, r) {
+  let best = -1, bd = r * r;
+  STARS.forEach((s, i) => { if (!s.xy) return; const d = (s.xy[0] - x) * (s.xy[0] - x) + (s.xy[1] - y) * (s.xy[1] - y); if (d < bd) { bd = d; best = i; } });
+  return best;
+}
+
+/* --------------------------------------------------------------- input */
+let dragging = false; const pts = new Map(); let moved = 0, pinch = 0;
+canvas.addEventListener('pointerdown', (e) => {
+  canvas.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+  dragging = true; moved = 0; anim = null; cam.vaz = cam.valt = 0; canvas.classList.add('dragging');
+  if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); }
+});
+canvas.addEventListener('pointermove', (e) => {
+  const prev = pts.get(e.pointerId);
+  if (!prev) {
+    const h = nearest(e.clientX, e.clientY, 26);
+    if (h !== hover) { hover = h; canvas.classList.toggle('pointing', h >= 0); requestDraw(); }
+    return;
+  }
+  const dx = e.clientX - prev[0], dy = e.clientY - prev[1]; pts.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pts.size === 2) {
+    const [a, b] = [...pts.values()]; const dist = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (pinch > 0) cam.fov *= pinch / dist; pinch = dist; moved += 10; requestDraw(); return;
+  }
+  moved += Math.abs(dx) + Math.abs(dy);
+  const k = cam.fov / H;
+  cam.vaz = -dx * k / Math.max(0.35, Math.cos(cam.alt)); cam.valt = dy * k;
+  cam.az += cam.vaz; cam.alt += cam.valt;
+  if (moved > 8) $('hint').classList.add('off');
+  requestDraw();
+});
+const lift = (e) => {
+  if (!pts.has(e.pointerId)) return;
+  pts.delete(e.pointerId); pinch = 0;
+  if (pts.size === 0) {
+    dragging = false; canvas.classList.remove('dragging');
+    if (moved < 7) { const h = nearest(e.clientX, e.clientY, e.pointerType === 'touch' ? 34 : 26); if (h >= 0) select(h); cam.vaz = cam.valt = 0; }
+    if (reduceMotion) cam.vaz = cam.valt = 0;
+    requestDraw();
+  }
+};
+canvas.addEventListener('pointerup', lift); canvas.addEventListener('pointercancel', lift);
+let wheelAcc = 0, wheelAt = 0;
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.ctrlKey) { anim = null; cam.fov *= Math.exp(e.deltaY * 0.01); requestDraw(); return; }
+  const now = performance.now(); if (now - wheelAt < 750) return;
+  wheelAcc += e.deltaY + e.deltaX;
+  if (Math.abs(wheelAcc) > 50) { step(wheelAcc > 0 ? 1 : -1); wheelAcc = 0; wheelAt = now; }
+}, { passive: false });
+document.addEventListener('keydown', (e) => {
+  if (!plain.hidden || e.altKey || e.ctrlKey || e.metaKey) return;
+  const t = e.target; if (t && t.closest && t.closest('#card') && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') step(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') step(-1);
+  else if (e.key === 'Escape' || e.key === 'Home') overview();
+  else if (e.key === '+' || e.key === '=') { anim = null; cam.fov *= 0.9; requestDraw(); }
+  else if (e.key === '-') { anim = null; cam.fov *= 1.1; requestDraw(); }
+  else return;
+  e.preventDefault();
+});
+window.addEventListener('resize', resize);
+
+/* ---------------------------------------------------------------- start */
+if (gl) {
+  try { initGL(); glOk = true; } catch (err) { glOk = false; if (window.console) console.warn('Sky could not start, showing the plain view.', err); }
+}
+if (!glOk) document.body.classList.add('nogl');
+resize(); route();
+if (glOk) { basis(); wantLand(view.scene); requestDraw(); }
+window.__sky = { cam, select, step, STARS, requestDraw, setScene, setDay, view, ready: () => !job && !jobs.length && shown.scene === view.scene };
+})();
+</script>
+</body>
+</html>
